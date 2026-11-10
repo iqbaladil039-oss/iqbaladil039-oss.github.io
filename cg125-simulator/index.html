@@ -49,6 +49,42 @@ details summary{cursor:pointer;color:var(--navy);font-weight:600}
 .scroll{overflow-x:auto}
 .card{min-width:0;overflow-x:auto}.grid>*{min-width:0}.detail dd{min-width:0;overflow-wrap:anywhere}
 @media(max-width:640px){.mgrid .small{display:none}.detail dl{grid-template-columns:90px 1fr}.wrap{padding:10px}}
+.nav{position:sticky;top:0;z-index:50;background:rgba(244,245,247,.96);backdrop-filter:blur(4px);padding:8px 0 6px;margin-top:10px}
+.steps{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.steps a{flex:1 1 180px;display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--t2);background:#fff;border:1px solid var(--bd);border-radius:10px;padding:8px 12px;font-weight:600;font-size:13.5px}
+.steps a .no{width:26px;height:26px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:var(--soft);color:var(--t2);font-weight:700;flex:none}
+.steps a.active{border-color:var(--navy);color:var(--navy);box-shadow:0 0 0 2px var(--navys)}.steps a.active .no{background:var(--navy);color:#fff}
+.steps a.done .no{background:var(--green);color:#fff}
+.steps a small{display:block;font-weight:400;font-size:11.5px;color:var(--t3)}
+.page{display:none}.page.show{display:block}
+.sheet{width:100%;border-collapse:collapse}.sheet th{position:sticky;top:0}
+.sheet td{padding:4px 6px;vertical-align:middle}.sheet td.lbl{width:42%}.sheet td.inp{width:130px}.sheet td.unit{width:120px;color:var(--t2);font-size:12px}.sheet td.def{width:90px;color:var(--t2);font-size:12px;text-align:right;font-variant-numeric:tabular-nums}
+.sheet tr.chg td.inp input{background:#FFF8E1;border-color:#E9C46A}
+.sheet input.bad,.mtab input.bad{border-color:var(--red);background:var(--dangs)}
+.sheet tr.sec td{background:var(--navys);color:var(--navy);font-weight:700;font-size:13px;padding:7px 8px}
+.fixed{display:inline-block;padding:4px 10px;border-radius:7px;background:var(--soft);border:1px dashed #b9c0cc;font-weight:700;color:var(--navy)}
+.mtab input{width:60px;text-align:center}.mtab td,.mtab th{text-align:center}.mtab td:first-child,.mtab th:first-child{text-align:left}
+.ideal{color:var(--green);font-weight:700;font-size:12px}
+.actionbar{position:sticky;bottom:0;z-index:40;margin-top:14px;background:#fff;border:1px solid var(--bd);border-radius:var(--r);box-shadow:0 -2px 10px rgba(20,23,31,.08);padding:10px 14px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between}
+.actionbar .pv{display:flex;flex-wrap:wrap;gap:14px;font-size:12.5px;color:var(--t2)}.actionbar .pv b{color:var(--navy);font-size:14px}
+button.big{font-size:15px;padding:10px 22px;font-weight:700;border-radius:10px}
+button.go{background:var(--green);border-color:var(--green);color:#fff}button.go:hover{filter:brightness(1.08)}
+.errs{color:var(--red);font-size:12.5px;width:100%}
+.prog{height:10px;border-radius:6px;background:#E6E8ED;overflow:hidden;flex:1 1 200px;min-width:160px}.prog>i{display:block;height:100%;background:linear-gradient(90deg,var(--teal),var(--green));width:0}
+.sumtab td{padding:3px 6px;font-size:12.5px}.sumtab td:last-child{text-align:right;font-weight:600;font-variant-numeric:tabular-nums}
+.wf td.n{font-weight:600}.wfbar{height:12px;border-radius:4px;background:var(--teal)}
+.hero{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
+.hero .kpi .v{font-size:22px}
+a.lnk{color:var(--navy);font-weight:600}
+@media print{
+ .nav,.toolbar,.noprint,header.top,footer,.actionbar{display:none!important}
+ body{background:#fff;font-size:11.5px}.wrap{max-width:none;padding:0}
+ .page{display:none!important}#page-results{display:block!important}
+ .card{box-shadow:none;break-inside:avoid;page-break-inside:avoid;overflow:visible}
+ .grid.g2,.grid.g3{grid-template-columns:1fr 1fr}
+ .printhead{display:block!important}
+}
+.printhead{display:none;margin-bottom:8px}
 </style>
 </head>
 <body>
@@ -58,56 +94,88 @@ details summary{cursor:pointer;color:var(--navy);font-weight:600}
   <h1>CG125 Ignition Coil – Automated Line Process Simulator</h1>
   <p>Xiamen Sipu “Full Automatic Ignition Coil (CG125) Production Line Solution-V2” · Atlas Engineering, Ignition Coil Shop</p>
  </div>
- <div><span class="pill">Top-view layout per SIPU sheet 1/3</span><span class="pill">Live discrete-event animation</span><span class="pill">Manpower & capacity model</span></div>
+ <div><span class="pill">Top-view layout per SIPU sheet 1/3</span><span class="pill">Line rate fixed 170 pcs/h (SIPU sheet 7)</span><span class="pill">Discrete-event trial run</span></div>
 </header>
-<div class="banner b-info" style="margin-top:12px">
- <b>How to read the tags:</b>
- <span class="tag t-doc">SIPU</span> stated in the SIPU proposal ·
- <span class="tag t-atl">ATLAS</span> from Atlas project files / approved figures ·
- <span class="tag t-toy">TOYODENSO</span> from Toyodenso equipment review (5 Nov 2026) ·
- <span class="tag t-der">DERIVED</span> calculated from the above ·
- <span class="tag t-asm">ASSUMPTION</span> simulator assumption, not from any document – edit it in the panels below.
-</div>
-<div id="rateBanner"></div>
+<nav class="nav" aria-label="Simulator steps"><div class="steps">
+ <a href="#/assumptions" id="nav-assumptions"><span class="no">1</span><span>Assumption Sheet<small>Inputs for the run</small></span></a>
+ <a href="#/simulation" id="nav-simulation"><span class="no">2</span><span>Simulation<small>Trial run of the line</small></span></a>
+ <a href="#/results" id="nav-results"><span class="no">3</span><span>Results<small>Output, losses, payback</small></span></a>
+</div></nav>
 
-<div class="card">
- <h2>Line layout & live part flow <span class="small" style="font-weight:400">— click any numbered station for details</span></h2>
- <div class="toolbar">
-  <button id="bPlay" class="pri">❚❚ Pause</button>
-  <button id="bReset">↺ Reset animation</button>
-  <label class="small">Speed</label>
-  <select id="speed" style="width:auto"><option value="1">1× real time</option><option value="5">5×</option><option value="20" selected>20×</option><option value="60">60×</option><option value="120">120×</option></select>
-  <label class="small">Animate shift</label>
-  <select id="animShift" style="width:auto"><option value="0">Shift A (day)</option><option value="1">Shift B</option><option value="2">Shift C (night)</option></select>
-  <span class="small" id="simClock"></span>
+<!-- ============ PAGE 1 ============ -->
+<section class="page" id="page-assumptions">
+ <div class="banner b-info" style="margin-top:6px">
+  <b>Source tags:</b>
+  <span class="tag t-doc">SIPU</span> SIPU proposal ·
+  <span class="tag t-atl">ATLAS</span> Atlas project files / approved figures ·
+  <span class="tag t-toy">TOYODENSO</span> Toyodenso review (5 Nov 2026) ·
+  <span class="tag t-der">DERIVED</span> calculated ·
+  <span class="tag t-asm">ASSUMPTION</span> simulator estimate, not in any document. Changed cells are highlighted yellow. Press <b>Simulate ▶</b> to apply and start the trial run.
  </div>
- <div class="svgbox"><svg id="svg" viewBox="0 0 1560 700" aria-label="Top-view sketch of the SIPU CG125 automated line"></svg></div>
- <div class="legend">
-  <span><i style="background:#cfd5de;border:1px solid #889"></i>Empty bobbin</span><span><i style="background:#C87533"></i>Wound secondary</span><span><i style="background:#8a6d3b"></i>Soldered secondary</span><span><i style="background:#04337B"></i>Primary + secondary assembly</span><span><i style="background:#16814A"></i>Tested good / finished</span><span><i style="background:#C0362C"></i>NG part</span><span><i style="background:#0D8782"></i>Line Operator</span><span><i style="background:#5b8f29"></i>Material Handler</span><span><i style="background:#B45309"></i>Technician</span>
+ <div class="card"><h2>Assumption sheet</h2><div class="scroll"><table class="sheet" id="sheet"></table></div></div>
+ <div class="card"><h2>Manpower per shift <span class="small" style="font-weight:400">— ideal crew shown alongside</span></h2><div id="mantab"></div></div>
+ <div class="card"><h2>Role tending-load assumptions <span class="tag t-asm">ASSUMPTION</span></h2><div class="scroll"><table class="sheet" id="loadtab"></table></div>
+  <p class="small">Other fixed animation assumptions: bobbin tray 50, housing/product tray 48, product stacker 5 trays (240), D-axis buffer 24, solder unload buffer 16, NG bins 40, wire spool 125 coils, primary feeder hopper 400, core feeder 600, minor stops average 2 min, C-axis cart 8 s per trip, walking speed 1 m/s.</p></div>
+ <div class="actionbar">
+  <div class="pv" id="preview"></div>
+  <div class="toolbar" style="margin:0"><button id="bResetDef">↺ Reset to defaults</button><button id="bSimulate" class="pri big go">Simulate ▶</button></div>
+  <div class="errs" id="errs"></div>
  </div>
- <div class="alerts" id="alerts"></div>
- <div class="kpis" id="liveKpis"></div>
- <p class="small" style="margin:8px 0 0">The animation is a stochastic, second-by-second illustration of one shift using the manning of the selected shift. Monthly figures below come from the deterministic capacity & manpower model (same assumptions), so the two can differ slightly over short runs.</p>
-</div>
+</section>
 
-<div class="grid g32">
- <div class="card detail" id="detail"></div>
+<!-- ============ PAGE 2 ============ -->
+<section class="page" id="page-simulation">
  <div class="card">
-  <h2>Manpower on the line (per shift)</h2>
-  <div id="manning"></div>
+  <h2>Trial run – line layout & live part flow <span class="small" style="font-weight:400">— click any numbered station for details · white pills = live WIP per buffer</span></h2>
+  <div class="toolbar">
+   <button id="bPlay" class="pri">❚❚ Pause</button>
+   <button id="bRestart">↺ Restart run</button>
+   <label class="small" for="speed">Speed</label>
+   <select id="speed" style="width:auto"><option value="1">1× real time</option><option value="5">5×</option><option value="20">20×</option><option value="60">60×</option><option value="120" selected>120×</option><option value="300">300×</option><option value="900">900×</option><option value="3600">3600×</option><option value="max">Max (fast-forward)</option></select>
+   <label class="small" for="runDur">Run duration</label>
+   <select id="runDur" style="width:auto"><option value="shift" selected>1 shift</option><option value="day">1 day (all shifts)</option><option value="month">1 month (all working days)</option></select>
+   <label class="small" for="startShift">Shift (1-shift run)</label>
+   <select id="startShift" style="width:auto"><option value="0">Shift A (day)</option><option value="1">Shift B</option><option value="2">Shift C (night)</option></select>
+   <button id="bFF">⏩ Fast-forward to end</button>
+   <button id="bResults" class="pri">View results ▶</button>
+  </div>
+  <div class="toolbar"><div class="prog"><i id="progBar"></i></div><span class="small" id="simClock"></span></div>
+  <div id="runDone"></div>
+  <div class="svgbox"><svg id="svg" viewBox="0 0 1560 700" aria-label="Top-view sketch of the SIPU CG125 automated line"></svg></div>
+  <div class="legend">
+   <span><i style="background:#cfd5de;border:1px solid #889"></i>Empty bobbin</span><span><i style="background:#C87533"></i>Wound secondary</span><span><i style="background:#8a6d3b"></i>Soldered secondary</span><span><i style="background:#04337B"></i>Primary + secondary assembly</span><span><i style="background:#16814A"></i>Tested good / finished</span><span><i style="background:#C0362C"></i>NG part</span><span><i style="background:#0D8782"></i>Line Operator</span><span><i style="background:#5b8f29"></i>Material Handler</span><span><i style="background:#B45309"></i>Technician</span><span><i style="background:#fff;border:2px solid #0D8782;border-radius:3px"></i>WIP counter</span><span><i style="background:#fff;border:2px solid #8B919C;border-radius:3px"></i>Material stock</span><span><i style="background:#fff;border:2px solid #16814A;border-radius:3px"></i>Finished (FG)</span>
+  </div>
+  <div class="alerts" id="alerts"></div>
+  <div class="kpis" id="liveKpis"></div>
+  <p class="small" style="margin:8px 0 0">The trial run is a stochastic, second-by-second simulation using the crew of each shift (multi-shift runs hand over A → B → C). Monthly figures on the Results page come from the deterministic capacity & manpower model with the same assumptions; the trial-run extrapolation is shown next to it for comparison.</p>
  </div>
-</div>
+ <div class="grid g32">
+  <div class="card detail" id="detail"></div>
+  <div class="card"><h2>Active assumptions <a class="lnk small" href="#/assumptions" style="margin-left:auto">✎ Edit assumptions</a></h2><div id="asmSummary"></div><h3>Crew on the line</h3><div id="crew"></div></div>
+ </div>
+ <div class="card"><h2>Station index (renumbered vs SIPU drawing)</h2><div id="mapping"></div></div>
+</section>
 
-<div class="grid g2">
- <div class="card"><h2>Production assumptions</h2><div id="controls"></div></div>
- <div class="card"><h2>Manpower effect on output</h2><div id="mpEffect"></div></div>
-</div>
-
-<div class="card"><h2>Capacity planner</h2><div id="planner"></div></div>
-<div class="card"><h2>Financial strip <span class="tag t-atl">ATLAS</span></h2><div id="fin"></div></div>
-<div class="card"><h2>Station index (renumbered vs SIPU drawing)</h2><div id="mapping"></div></div>
-<div class="card"><h2>Assumption register – tending loads & loss model (editable)</h2><div id="assump"></div></div>
-<div class="card"><h2>Toyodenso review – points that affect this simulation <span class="tag t-toy">TOYODENSO</span></h2><div id="toyo"></div></div>
+<!-- ============ PAGE 3 ============ -->
+<section class="page" id="page-results">
+ <div class="printhead"><h2 style="color:#04337B;margin:0">CG125 Automated Line – Simulation Results</h2><div class="small" id="printMeta"></div></div>
+ <div class="toolbar noprint" style="margin-top:10px"><button id="bBackSim">◀ Back to simulation</button><button id="bEditAsm">✎ Edit assumptions</button><button id="bPrint" class="pri">⎙ Print / Save PDF</button></div>
+ <div id="rateBanner"></div>
+ <div class="card"><h2>Headline – achievable output vs requirement</h2><div id="hero"></div></div>
+ <div class="grid g2">
+  <div class="card"><h2>Losses by cause (monthly) <span class="tag t-der">DERIVED</span></h2><div id="losses"></div></div>
+  <div class="card"><h2>Constraint & capacity margin</h2><div id="constraint"></div></div>
+ </div>
+ <div class="card"><h2>Trial run (stochastic simulation)</h2><div id="trial"></div></div>
+ <div class="card"><h2>WIP by buffer – trial run</h2><div id="wipRes"></div></div>
+ <div class="grid g2">
+  <div class="card"><h2>Manpower effect on output</h2><div id="mpEffect"></div></div>
+  <div class="card"><h2>Manpower sensitivity – what if we reduce the crew?</h2><div id="sens"></div></div>
+ </div>
+ <div class="card"><h2>Capacity planner & manual-line comparison</h2><div id="planner"></div></div>
+ <div class="card"><h2>Payback & ROI <span class="tag t-atl">ATLAS</span></h2><div id="fin"></div></div>
+ <div class="card"><h2>Toyodenso review – points that affect this simulation <span class="tag t-toy">TOYODENSO</span></h2><div id="toyo"></div></div>
+</section>
 <footer>Atlas Engineering – CG125 Automated Line Simulator</footer>
 </div>
 <script>
@@ -125,7 +193,7 @@ var ROLES = [
  {id:"TE",name:"Maintenance Technician (shared)",color:"#B45309",desc:"Day-shift / on-call: preventive maintenance, major fault repair, adjustments and changeovers."}
 ];
 var DEF = {
- rate:200, days:25, shifts:3, hours:8, breaks:30, autonomy:30, oee:91.6667, ucap:85, demand:110000,
+ rate:170, days:25, shifts:3, hours:8, breaks:30, autonomy:30, oee:91.6667, ucap:85, demand:110000,
  ng1:0.5, ng2:0.3, ng3:0.3, ng4:0.3, ng5:0.2,
  man:[[1,1,1],[1,0,0],[1,0,0]], /* man[shift][role] role order LO,MH,TE */
  potOn:false, potCap:75000,
@@ -134,7 +202,7 @@ var DEF = {
  mh_kit:50, mh_pack:20, mh_issue:5, mh_fix:30,
  te_pm:45, te_faults:1, te_faultMin:60, te_adj:30, te_wait:1.0,
  upPace:0.95,
- capexUsd:253735, fx:279, saving:18000000, manualHeads:26, manualCap:60000, targetYrs:4
+ capexUsd:253735, fx:279, saving:18000000, manualHeads:26, manualCap:60000, targetYrs:4, ttPct:40
 };
 var P = JSON.parse(JSON.stringify(DEF));
 
@@ -442,10 +510,11 @@ function drawLayout(){
   hg.addEventListener("click",function(){selectStation(s.n);});
   DYN.badges[s.n]=c;});
  /* people layer */
+ buildWipLayer();
  DYN.ppl=el("g",{});
 }
 /* ============================ DISCRETE-EVENT ANIMATION ============================ */
-var S=null, running=true, speed=20, animShift=0;
+var S=null, running=false, speed=120, animShift=0;
 var BOB_TRAY=50, HOUSE_TRAY=48, FIN_TRAY=48, FIN_CAP=240, DCAP=24, SBUF=16, NGBIN=40, SPOOL=125, PRIM_CAP=400, CORE_CAP=600; /* ASSUMPTIONS */
 function rnd(){return Math.random();}
 function expo(m){return -Math.log(1-rnd())*m;}
@@ -466,9 +535,7 @@ function resetSim(){
  for(var i=0;i<12;i++) S.spindles.push({wire:Math.round(SPOOL-i*9-rnd()*6),broken:false,coil:null,brkAt:2});
  for(i=0;i<LOOP.N;i++) S.fix.push(null);
  S.nextStop = P.oee<100 ? expo(meanUp()) : Infinity;
- var m=curMan(), id=0;
- ["LO","MH","TE"].forEach(function(r,ri){for(var k=0;k<m[ri];k++){var hx= r==="LO"? (k%2?1200:560): r==="MH"?1440:1050;
-  S.people.push({id:r+"-"+(["A","B","C"][animShift])+(k+1),role:r,x:hx,y:652,hx:hx,task:null,busy:0,allow:0,state:"idle"});}});
+ spawnPeople();
  S.nextFault = (P.man.slice(0,P.shifts).reduce(function(a,mm){return a+mm[2];},0)===0)? expo(24*3600/(P.te_faults+(P.te_pm+P.te_adj)/P.te_faultMin)) : Infinity;
 }
 function meanUp(){var D=120,o=P.oee/100;return D*o/(1-o);} /* minor stops mean 2 min (ASSUMPTION) */
@@ -611,10 +678,6 @@ function stepLine(dt){
  if(S.finStack>=FIN_CAP) setStat(20,"block");
 }
 function N6col(p){return p.ng?"#C0362C":"#16814A";}
-function stepSim(dtSim){
- var h=0.25; while(dtSim>0){var d=Math.min(h,dtSim); dtSim-=d; S.t+=d; genTasks(); dispatch(); stepPeople(d); stepLine(d);}
- while(S.okLog.length&&S.okLog[0]<S.t-3600) S.okLog.shift();
-}
 /* ============================ RENDER ============================ */
 var COL={bob:"#cfd5de",wound:"#C87533",sold:"#8a6d3b",asm:"#04337B",good:"#16814A",ng:"#C0362C"};
 var STATCOL={run:"#0D8782",starve:"#D99A00",block:"#E0662B",down:"#C0362C"};
@@ -677,21 +740,98 @@ function render(){
  if(!S.people.length){ el("text",{x:780,y:640,"font-size":13,"text-anchor":"middle",fill:"#C0362C","font-weight":700},"No one on this shift – line runs only until buffers empty",DYN.ppl); }
  /* badges */
  for(var k=1;k<=20;k++){ DYN.badges[k].setAttribute("fill", STATCOL[S.stat[k]||"run"]); }
- renderLive();
+ renderWip(); renderLive();
 }
 function shade(p){ var a=[207,213,222], b=[200,117,51]; return "rgb("+a.map(function(v,i){return Math.round(v+(b[i]-v)*p);}).join(",")+")"; }
 function wip(){ var n=S.cart.n+S.dBuf+S.sold.parts.length+S.sBuf.length+(S.xfer?1:0);
  S.spindles.forEach(function(sp){if(sp.coil)n++;}); S.nests.forEach(function(x){if(x&&x.sec)n++;}); S.fix.forEach(function(f){if(f&&f.coil)n++;}); return n; }
+/* ============================ WIP COUNTERS ============================ */
+var WIPDEF=[
+ {k:"feed",label:"Bobbin feeder – tray stock (St.1–2)",kind:"stock",x:92,y:488,f:function(){return S.bobCur+S.bobSpare;}},
+ {k:"cart",label:"C-axis transfer cart (St.3)",kind:"wip",cap:12,x:182,y:522,f:function(){return S.cart.n;}},
+ {k:"spin",label:"12-spindle secondary winder (St.4)",kind:"wip",cap:12,x:608,y:370,f:function(){var n=0;S.spindles.forEach(function(sp){if(sp.coil)n++;});return n;}},
+ {k:"dbuf",label:"D-axis cart / transfer conveyor (St.5)",kind:"wip",cap:DCAP,x:706,y:552,f:function(){return S.dBuf;}},
+ {k:"sold",label:"Soldering 8-up + resistance test (St.6–7)",kind:"wip",cap:8,x:838,y:522,f:function(){return S.sold.parts.length;}},
+ {k:"sbuf",label:"Solder unloading transfer buffer (St.7→9)",kind:"wip",cap:SBUF,x:922,y:320,f:function(){return S.sBuf.length;}},
+ {k:"rot",label:"Rotary assembly table (St.8–14)",kind:"wip",cap:8,x:1059,y:284,f:function(){var n=0;S.nests.forEach(function(x){if(x&&x.sec)n++;});return n;}},
+ {k:"xfer",label:"Intermediate transfer (St.14–15)",kind:"wip",cap:1,x:1226,y:430,f:function(){return S.xfer?1:0;}},
+ {k:"loop",label:"Housing loop conveyor (St.16–19)",kind:"wip",cap:LOOP.N,x:1305,y:346,f:function(){var n=0;S.fix.forEach(function(f){if(f&&f.coil)n++;});return n;}},
+ {k:"house",label:"Housing trays – stock (St.16)",kind:"stock",x:1440,y:538,f:function(){return S.houseCur+S.houseSpare;}},
+ {k:"fin",label:"Collection stacker – finished, awaiting removal (St.20)",kind:"fg",cap:FIN_CAP,x:1430,y:302,f:function(){return S.finStack;}}
+];
+var WIPCOL={wip:"#0D8782",stock:"#8B919C",fg:"#16814A"}, WIPPRE={wip:"WIP ",stock:"Stock ",fg:"FG "};
+function buildWipLayer(){ DYN.wip={}; var layer=el("g",{"pointer-events":"none"});
+ WIPDEF.forEach(function(w){ var g=el("g",{},layer); var r=el("rect",{x:w.x-28,y:w.y-9,width:56,height:18,rx:9,fill:"#fff",stroke:WIPCOL[w.kind],"stroke-width":2,opacity:0.96},g);
+  var t=el("text",{x:w.x,y:w.y+4,"font-size":11,"text-anchor":"middle","font-weight":700,fill:"#04337B"},"",g); el("title",{},g,w.label); DYN.wip[w.k]={r:r,t:t,last:null}; }); }
+function renderWip(){ if(!DYN.wip) return; WIPDEF.forEach(function(w){ var o=DYN.wip[w.k], v=w.f(); if(o.last===v) return; o.last=v;
+ var txt=WIPPRE[w.kind]+v; var wd=12+txt.length*6.6; o.t.textContent=txt; o.r.setAttribute("x",w.x-wd/2); o.r.setAttribute("width",wd);
+ var full = (w.k==="dbuf"||w.k==="sbuf"||w.k==="fin") && v>=w.cap;
+ o.r.setAttribute("fill", full?"#FFF6E5":"#fff"); o.r.setAttribute("stroke", full?"#B45309":WIPCOL[w.kind]); }); }
+
+/* ============================ RUN CONTROL ============================ */
+var RATE_FIXED=170;
+var RUN={dur:"shift",start:0,end:0,done:false,navigated:false,started:false,ffwd:false,res:null};
+var curRoute="", pending=false;
+function nSh(){return Math.max(1,Math.min(3,Math.round(P.shifts)));}
+function shiftSec(){return P.hours*3600;}
+function runEndSec(d){d=d||RUN.dur; return d==="shift"?shiftSec(): d==="day"? nSh()*shiftSec(): P.days*nSh()*shiftSec();}
+function shiftAt(t){ if(RUN.dur==="shift") return RUN.start; return Math.floor(t/shiftSec())%nSh(); }
+function dayAt(t){ return RUN.dur==="shift"?1:Math.floor(t/(shiftSec()*nSh()))+1; }
+function spawnPeople(){ S.people=[]; S.tasks.forEach(function(t){t.taken=null;}); var m=curMan();
+ ["LO","MH","TE"].forEach(function(r,ri){for(var k=0;k<m[ri];k++){var hx= r==="LO"? (k%2?1200:560): r==="MH"?1440:1050;
+  S.people.push({id:r+"-"+(["A","B","C"][animShift])+(k+1),role:r,x:hx,y:652,hx:hx,task:null,busy:0,allow:0,state:"idle"});}}); }
+function initAcc(){ var a={oee:0,te:0,wait:0,shiftOk:[],shiftStartOk:0,wip:{},wipTot:{sum:0,max:0}};
+ WIPDEF.forEach(function(w){a.wip[w.k]={sum:0,max:0};}); S.acc=a; }
+function recordShift(){ var a=S.acc; a.shiftOk.push({shift:animShift,day:dayAt(Math.max(0,S.t-1)),ok:S.ok-a.shiftStartOk}); a.shiftStartOk=S.ok; }
+function accumulate(d){ var a=S.acc;
+ if(!S.up){ if(/technician/.test(S.stopReason)) a.te+=d; else a.oee+=d; }
+ else if(S.tasks.some(function(t){return t.blocking && S.stat[t.st] && S.stat[t.st]!=="run";})) a.wait+=d;
+ var tot=0; WIPDEF.forEach(function(w){ var v=w.f(), q=a.wip[w.k]; q.sum+=v*d; if(v>q.max) q.max=v; if(w.kind==="wip") tot+=v; });
+ a.wipTot.sum+=tot*d; if(tot>a.wipTot.max) a.wipTot.max=tot; }
+function stepSim(dtSim){
+ var h=0.25;
+ while(dtSim>1e-9 && !RUN.done){
+  var d=Math.min(h,dtSim,RUN.end-S.t); if(d<=1e-9){ finishRun(); break; }
+  dtSim-=d; S.t+=d;
+  var si=shiftAt(Math.min(S.t,RUN.end-1e-6)); if(si!==animShift){ recordShift(); animShift=si; spawnPeople(); }
+  genTasks(); dispatch(); stepPeople(d); stepLine(d); accumulate(d);
+  if(S.t>=RUN.end-1e-9){ finishRun(); break; }
+ }
+ while(S.okLog.length&&S.okLog[0]<S.t-3600) S.okLog.shift();
+}
+function setPlayBtn(){ var b=$("bPlay"); b.textContent = RUN.done?"↻ Run again":(running?"❚❚ Pause":"▶ Play"); }
+function startRun(){
+ RUN.dur=$("runDur").value; var st=+$("startShift").value; if(st>=nSh()){st=0;$("startShift").value="0";}
+ RUN.start=st; animShift = RUN.dur==="shift"?st:0; RUN.end=runEndSec(); RUN.done=false; RUN.navigated=false; RUN.started=true; RUN.ffwd=false; RUN.res=null;
+ $("startShift").querySelectorAll("option").forEach(function(o){o.disabled= +o.value>=nSh();});
+ $("startShift").disabled = RUN.dur!=="shift";
+ resetSim(); initAcc(); running=true; setPlayBtn(); $("runDone").innerHTML=""; updateNav();
+}
+function finishRun(){ if(RUN.done) return; recordShift(); RUN.done=true; running=false; RUN.ffwd=false; RUN.res=snapshot(); setPlayBtn(); updateNav();
+ $("runDone").innerHTML='<div class="banner b-ok" style="margin:0 0 8px">✓ Trial run complete – '+fmt(S.ok)+' OK pcs in '+durTxt(S.t)+' simulated. Opening results…</div>';
+ setTimeout(function(){ if(curRoute==="simulation" && !RUN.navigated){ RUN.navigated=true; go("results"); } },1500); }
+function durTxt(t){ var h=t/3600; return h>=48? fmt(h/ (shiftSec()*nSh()/3600),1)+" days ("+fmt(h)+" line-hours)" : fmt(h,1)+" h"; }
+function snapshot(){ if(!S||!S.acc) return null; var a=S.acc, T=Math.max(1,S.t);
+ var wip={}; WIPDEF.forEach(function(w){wip[w.k]={avg:a.wip[w.k].sum/T,max:a.wip[w.k].max};});
+ var month=P.days*nSh()*shiftSec(); var ext=S.ok/T*month; var potCut=false; if(P.potOn&&ext>P.potCap){ext=P.potCap;potCut=true;}
+ var byShift=[0,0,0], cnt=[0,0,0]; a.shiftOk.forEach(function(s){byShift[s.shift]+=s.ok;cnt[s.shift]++;});
+ return {dur:RUN.dur,done:RUN.done,t:S.t,end:RUN.end,ok:S.ok,ng:S.ng.slice(),avgRate:S.ok/(T/3600),monthly:ext,potCut:potCut,
+  oee:a.oee,te:a.te,wait:a.wait,wip:wip,wipAvg:a.wipTot.sum/T,wipMax:a.wipTot.max,byShift:byShift,cnt:cnt,startShift:RUN.start};
+}
+/* ============================ RENDER (live) ============================ */
 function renderLive(){
- var h=Math.floor(S.t/3600), m=Math.floor(S.t%3600/60);
- $("simClock").textContent="Sim time "+h+"h "+String(m).padStart(2,"0")+"m · "+(running?"running":"paused")+" · takt "+S.takt.toFixed(1)+" s";
+ var sh=shiftSec(), ts=S.t%sh, h=Math.floor(ts/3600), m=Math.floor(ts%3600/60);
+ var state=RUN.done?"finished":(running?(RUN.ffwd||speed==="max"?"fast-forward":"running"):"paused");
+ $("simClock").textContent=(RUN.dur!=="shift"?"Day "+dayAt(Math.min(S.t,RUN.end-1e-6))+" · ":"")+"Shift "+SHIFT_NAMES[animShift]+" "+h+"h "+String(m).padStart(2,"0")+"m · simulated "+fmt(S.t/3600,1)+" of "+fmt(RUN.end/3600,0)+" h · "+state+" · takt "+S.takt.toFixed(1)+" s";
+ $("progBar").style.width=Math.min(100,S.t/RUN.end*100)+"%";
  var live = S.t>=3600? S.okLog.length : (S.t>300? S.okLog.length*3600/S.t : 0);
  var avg = S.t>600? S.ok*3600/S.t : 0;
  var ngTot=S.ng.reduce(function(a,b){return a+b;},0);
  var busy = S.people.length? S.people.filter(function(p){return p.task;}).length+"/"+S.people.length : "0";
+ var back=S.tasks.filter(function(t){return !t.taken;}).reduce(function(a,t){return a+t.dur;},0);
  var k=[["Line state",S.up?(Object.keys(S.stat).some(function(x){return S.stat[x]!=="run";})?"Running (partial wait)":"Running"):"Stopped","big"],
-  ["OK produced",fmt(S.ok),"ok"],["Live rate (pcs/h, last 60 min)",live?fmt(live):"…","big"],["Average rate (pcs/h)",avg?fmt(avg):"…"],
-  ["WIP in line",fmt(wip())],["NG-1 wire break (St.4)",S.ng[0],"ng"],["NG-2 sec. resistance (St.7→9)",S.ng[1],"ng"],["NG-3 CCD (St.12)",S.ng[2],"ng"],["NG-4 R & inter-turn (St.13)",S.ng[3],"ng"],["NG-5 hi-pot (St.19)",S.ng[4],"ng"],["Total NG",ngTot,"ng"],["People busy now",busy],["Operator backlog (min of open tasks)",fmt(S.tasks.filter(function(t){return !t.taken;}).reduce(function(a,t){return a+t.dur;},0)/60,1),S.tasks.filter(function(t){return !t.taken;}).reduce(function(a,t){return a+t.dur;},0)>900?"ng":""]];
+  ["OK produced",fmt(S.ok),"ok"],["Total line WIP (pcs)",fmt(wip()),"big"],["Live rate (pcs/h, last 60 min)",live?fmt(live):"…","big"],["Average rate (pcs/h)",avg?fmt(avg):"…"],
+  ["NG-1 wire break (St.4)",S.ng[0],"ng"],["NG-2 sec. resistance (St.7→9)",S.ng[1],"ng"],["NG-3 CCD (St.12)",S.ng[2],"ng"],["NG-4 R & inter-turn (St.13)",S.ng[3],"ng"],["NG-5 hi-pot (St.19)",S.ng[4],"ng"],["Total NG",ngTot,"ng"],["People busy now",busy],["Operator backlog (min of open tasks)",fmt(back/60,1),back>900?"ng":""]];
  $("liveKpis").innerHTML=k.map(function(x){return '<div class="kpi '+(x[2]||"")+'"><div class="v">'+x[1]+'</div><div class="l">'+x[0]+'</div></div>';}).join("");
  var al=[];
  if(!S.up) al.push('<span class="r">⛔ '+S.stopReason+' ('+Math.ceil(S.stopLeft/60)+' min left)</span>');
@@ -705,9 +845,14 @@ function renderLive(){
 var lastFrame=performance.now(), lastPanel=0;
 function loop(now){
  var dtReal=Math.min(0.1,(now-lastFrame)/1000); lastFrame=now;
- if(running) stepSim(dtReal*speed);
- render();
- if(now-lastPanel>500 && selected){ lastPanel=now; renderDetail(); }
+ if(curRoute==="simulation" && S){
+  if(running && !RUN.done){
+   if(speed==="max"||RUN.ffwd){ var t0=performance.now(); while(performance.now()-t0<28 && !RUN.done) stepSim(60); }
+   else stepSim(dtReal*speed);
+  }
+  render();
+  if(now-lastPanel>600){ lastPanel=now; renderDetail(); renderCrew(); }
+ }
  requestAnimationFrame(loop);
 }
 /* ============================ PANELS ============================ */
@@ -719,40 +864,6 @@ function renderDetail(){
  $("detail").innerHTML='<h2>Station detail</h2><div class="h">St.'+String(s.n).padStart(2,"0")+' · '+s.name+' '+stt+'</div><div class="small">'+s.unit+'</div>'+
  '<dl><dt>Function</dt><dd>'+s.fn+'</dd><dt>Up-count</dt><dd>'+s.up+'</dd><dt>Cycle</dt><dd>'+s.cyc(P.rate)+' '+TAG[s.src==="doc"?"der":s.src]+'</dd><dt>Input</dt><dd>'+s.in+'</dd><dt>Output</dt><dd>'+s.out+'</dd><dt>Operator</dt><dd>'+s.op+'</dd><dt>SIPU reference</dt><dd>'+s.sipu+'</dd></dl>'+
  '<p class="small" style="margin-top:10px">Click other numbered badges on the layout. Badge colour: <b style="color:#0D8782">running</b>, <b style="color:#D99A00">starved</b>, <b style="color:#E0662B">blocked</b>, <b style="color:#C0362C">stopped</b>.</p>';
-}
-function stepper(si,ri){ var dis = si>=P.shifts; return '<span class="step"><button data-s="'+si+'" data-r="'+ri+'" data-d="-1" '+(dis?"disabled":"")+'>−</button><b>'+(dis?"–":P.man[si][ri])+'</b><button data-s="'+si+'" data-r="'+ri+'" data-d="1" '+(dis?"disabled":"")+'>+</button></span>'; }
-function renderManning(){
- var r=model(), ideal=idealManning(P.shifts);
- var h='<table class="mgrid"><tr><th>Role</th>'+[0,1,2].map(function(i){return '<th>Shift '+SHIFT_NAMES[i]+'</th>';}).join("")+'<th>Total</th></tr>';
- ROLES.forEach(function(ro,ri){ var tot=0; for(var i=0;i<P.shifts;i++) tot+=P.man[i][ri];
-  h+='<tr><td><b style="color:'+ro.color+'">●</b> '+ro.name+'<div class="small">'+ro.desc+'</div></td>'+[0,1,2].map(function(i){return '<td>'+stepper(i,ri)+'</td>';}).join("")+'<td><b>'+tot+'</b></td></tr>'; });
- h+='<tr><th>People on line</th>'+[0,1,2].map(function(i){return '<th>'+(i<P.shifts?P.man[i].reduce(function(a,b){return a+b;},0):"off")+'</th>';}).join("")+'<th>'+r.heads+'</th></tr></table>';
- h+='<div class="toolbar" style="margin-top:8px"><button id="bIdeal" class="pri">Apply ideal manning</button><button data-q="mh">−1 Material Handler</button><button data-q="te">−1 Technician</button><button data-q="loC">−1 Line Operator (night)</button></div>';
- if(ideal){ h+='<div class="banner b-ok"><b>Ideal manning for '+P.shifts+' shift(s): '+ideal.t+' people</b> – '+[0,1,2].slice(0,P.shifts).map(function(i){var m=ideal.m[i];return "Shift "+SHIFT_NAMES[i]+": "+m[0]+" LO"+(m[1]?" + "+m[1]+" MH":"")+(m[2]?" + "+m[2]+" TE":"");}).join(" · ")+
-  '. This is the smallest crew with zero manning loss under the tending-load assumptions below. '+TAG.der+'<br><b>Why:</b> one Line Operator per running shift is loaded about '+pct(ideal.r.sh[0].loLoad/ideal.r.sh[0].loCap,0)+' of usable time (tray swaps, wire spools/breaks, feeders, NG bins, checks). Kitting and packing (~'+fmt(ideal.r.mhLoad)+' min/day) need one day-shift Material Handler; the shared Technician needs ~'+fmt(ideal.r.teLoad)+' min/day. The day shift has 2–3 people, which matches the “2 per shift” mentioned in Atlas files; the total matches Atlas’s 5-person basis '+TAG.atl+'.</div>'; }
- $("manning").innerHTML=h;
- $("manning").querySelectorAll("button[data-s]").forEach(function(b){b.onclick=function(){var s=+b.dataset.s,ri=+b.dataset.r;P.man[s][ri]=Math.max(0,Math.min(4,P.man[s][ri]+(+b.dataset.d)));changed(true);};});
- $("bIdeal").onclick=function(){ if(ideal){P.man=JSON.parse(JSON.stringify(ideal.m));changed(true);} };
- $("manning").querySelectorAll("button[data-q]").forEach(function(b){b.onclick=function(){var q=b.dataset.q; P.man=JSON.parse(JSON.stringify(ideal?ideal.m:DEF.man));
-  if(q==="mh"){for(var i=0;i<3;i++)P.man[i][1]=0;} if(q==="te"){for(i=0;i<3;i++)P.man[i][2]=0;} if(q==="loC"){P.man[Math.min(2,P.shifts-1)][0]=Math.max(0,P.man[Math.min(2,P.shifts-1)][0]-1);} changed(true);};});
-}
-var CTL=[
- ["rate","Line rate (pcs/h)","atl",1,60,400],["demand","Monthly requirement (pcs OK)","atl",1000,0,400000],["days","Working days / month","asm",1,1,31],["shifts","Shifts / day","atl",1,1,3],
- ["hours","Hours / shift","asm",0.5,1,12],["breaks","Planned breaks per person (min/shift)","asm",5,0,120],["autonomy","Unattended autonomy (min) – line runs on buffers","asm",5,0,120],
- ["oee","OEE / availability (%) – calibrated to Atlas 110k","der",0.01,30,100],["ucap","Max useful utilisation of a person (%)","asm",1,50,100],
- ["ng1","NG-1 wire break / scrap at St.4 (%)","asm",0.1,0,20],["ng2","NG-2 secondary resistance St.7 (%)","asm",0.1,0,20],["ng3","NG-3 CCD St.12 (%)","asm",0.1,0,20],["ng4","NG-4 resistance & inter-turn St.13 (%)","asm",0.1,0,20],["ng5","NG-5 hi-pot St.19 (%)","asm",0.1,0,20]
-];
-function renderControls(){
- var h='<div class="toolbar"><span class="small">Line-rate preset:</span><button data-rate="200" class="'+(P.rate==200?"on":"")+'">200 pcs/h – Atlas basis</button><button data-rate="170" class="'+(P.rate==170?"on":"")+'">170 – SIPU rated</button><button data-rate="150" class="'+(P.rate==150?"on":"")+'">150 – SIPU actual</button></div><div class="ctl">';
- CTL.forEach(function(c){ h+='<label for="c_'+c[0]+'">'+c[1]+' '+TAG[c[2]]+'</label><input type="number" id="c_'+c[0]+'" step="'+c[3]+'" min="'+c[4]+'" max="'+c[5]+'" value="'+P[c[0]]+'">'; });
- h+='<label for="c_potOn">Apply downstream potting / final-assembly limit (outside SIPU scope) '+TAG.atl+'</label><input type="checkbox" id="c_potOn" '+(P.potOn?"checked":"")+' style="justify-self:start">';
- h+='<label for="c_potCap">Downstream potting capacity (pcs/month, Atlas files: 75,000)</label><input type="number" id="c_potCap" step="1000" value="'+P.potCap+'">';
- h+='</div><p class="small">Defaults of 25 days × 3 shifts × 8 h with OEE 91.67% reproduce Atlas’s 110,000/month at 200 pcs/h (200 × 600 h × 91.67% = 110,000), the same calibration as the earlier simulator. NG defaults are placeholders (not in any document) – replace with SIPU’s guaranteed values when received.</p><label class="small">Animation speed <input type="range" id="c_spd" min="1" max="120" value="'+speed+'"></label>';
- $("controls").innerHTML=h;
- CTL.forEach(function(c){ $("c_"+c[0]).onchange=function(){ var v=parseFloat(this.value); if(!isFinite(v)) return; v=Math.max(c[4],Math.min(c[5],v)); if(c[0]==="shifts") v=Math.round(v); P[c[0]]=v; changed(["rate","shifts"].indexOf(c[0])>=0); $("controls").querySelectorAll("button[data-rate]").forEach(function(b){b.className=(+b.dataset.rate===P.rate)?"on":"";}); }; });
- $("c_potOn").onchange=function(){P.potOn=this.checked;changed(false);}; $("c_potCap").onchange=function(){P.potCap=+this.value||0;changed(false);};
- $("c_spd").oninput=function(){speed=+this.value; $("speed").value=String([1,5,20,60,120].reduce(function(a,b){return Math.abs(b-speed)<Math.abs(a-speed)?b:a;}));};
- $("controls").querySelectorAll("button[data-rate]").forEach(function(b){b.onclick=function(){P.rate=+b.dataset.rate;changed(true,true);};});
 }
 function barRow(label,load,cap,note){ var r=cap>0?load/cap:(load>0?9:0); var cls=r>1?"hot":r>0.9?"warm":"";
  return '<tr><td>'+label+'</td><td class="n">'+fmt(load)+'</td><td class="n">'+fmt(cap)+'</td><td style="width:32%"><div class="bar"><i class="'+cls+'" style="width:'+Math.min(100,r*100)+'%"></i></div></td><td class="n">'+(cap>0?pct(r,0):(load>0?"no one":"—"))+'</td><td class="small">'+(note||"")+'</td></tr>'; }
@@ -797,7 +908,7 @@ function renderPlanner(){
   '<tr><td>People (3 shifts)</td><td class="n">'+P.manualHeads+'</td><td class="n">'+r.heads+'</td></tr>'+
   '<tr><td>Output per person / month</td><td class="n">'+fmt(manOpp)+'</td><td class="n"><b>'+fmt(opp)+'</b> ('+(opp/manOpp).toFixed(1)+'×)</td></tr>'+
   '<tr><td>Capacity change</td><td class="n">—</td><td class="n">'+(achievable>=P.manualCap?"+":"")+pct(achievable/P.manualCap-1,0)+'</td></tr></table>'+
-  (P.potOn?'<p class="small">Downstream potting/final-assembly limit of '+fmt(P.potCap)+'/month is applied (Atlas files; outside SIPU scope).</p>':'<p class="small">Potting and final assembly are not part of the SIPU line (Toyodenso also notes potting is not in the flow). Atlas files rate them at 75,000/month – tick the option in Production assumptions to apply that limit.</p>')+
+  (P.potOn?'<p class="small">Downstream potting/final-assembly limit of '+fmt(P.potCap)+'/month is applied (Atlas files; outside SIPU scope).</p>':'<p class="small">Potting and final assembly are not part of the SIPU line (Toyodenso also notes potting is not in the flow). Atlas files rate them at 75,000/month – enable it on the Assumption Sheet (Page 1) to apply that limit.</p>')+
   '</div></div>';
  $("planner").innerHTML=h;
 }
@@ -810,7 +921,7 @@ function renderFin(){
   '<div class="kpi"><div class="v">PKR '+(P.saving/1e6).toFixed(0)+'M / yr</div><div class="l">Saving (mainly manpower, 26 → 5)</div></div>'+
   '<div class="kpi '+(pb<=P.targetYrs?"ok":"ng")+'"><div class="v">'+pb.toFixed(1)+' yrs</div><div class="l">Simple payback vs '+P.targetYrs+'-yr target</div></div>'+
   '<div class="kpi ok"><div class="v">'+pct(roi,0)+'</div><div class="l">Simple annual ROI</div></div>'+
-  '<div class="kpi"><div class="v">40% TT / 60% LC</div><div class="l">USD '+fmt(P.capexUsd*0.4)+' / '+fmt(P.capexUsd*0.6)+'</div></div></div>';
+  '<div class="kpi"><div class="v">'+fmt(P.ttPct)+'% TT / '+fmt(100-P.ttPct)+'% LC</div><div class="l">USD '+fmt(P.capexUsd*P.ttPct/100)+' / '+fmt(P.capexUsd*(1-P.ttPct/100))+'</div></div></div>';
  if(r.heads!==5) h+='<div class="banner '+(adjPb<=P.targetYrs?"b-info":"b-warn")+'">Manning set to <b>'+r.heads+'</b> people instead of 5: pro-rata saving ≈ PKR '+(adjSave/1e6).toFixed(1)+'M/yr → payback ≈ '+(isFinite(adjPb)?adjPb.toFixed(1):"—")+' yrs '+TAG.der+' (PKR 18M ÷ 21 people saved = PKR '+fmt(perHead)+' per person-year).</div>';
  h+='<p class="small">Payback uses the approved basis only (manpower saving); extra volume and scrap savings are excluded as per Atlas costing practice.</p>';
  $("fin").innerHTML=h;
@@ -819,7 +930,7 @@ function renderMapping(){
  var h='<div class="scroll"><table><tr><th>Clean St.</th><th>Station (true process order)</th><th>Unit</th><th>SIPU drawing reference</th></tr>';
  ST.forEach(function(s){h+='<tr><td><b>'+String(s.n).padStart(2,"0")+'</b></td><td><a href="#" data-st="'+s.n+'">'+s.name+'</a></td><td>'+s.unit+'</td><td class="small">'+s.sipu+'</td></tr>';});
  h+='</table></div><h3>Numbering & data inconsistencies found in the SIPU V2 drawing set</h3><ol class="small" style="color:#14171F">'+
- '<li><b>Line rate:</b> sheet 7 item 8 states <b>rated ≥170 pcs/h, actual 150 pcs/h</b>; Atlas’s basis is 200 pcs/h → 110,000/month. At 150 pcs/h with the same days/shifts/OEE the line gives ≈82,500/month. Needs SIPU written confirmation.</li>'+
+ '<li><b>Line rate:</b> sheet 7 item 8 states <b>rated ≥170 pcs/h, actual 150 pcs/h</b>; Atlas’s earlier basis was 200 pcs/h → 110,000/month. This simulator is fixed at the rated 170 pcs/h (≈93,500/month gross at 25 days × 3 shifts × 8 h, OEE 91.67%); at 150 pcs/h it would be ≈82,500. Needs SIPU written confirmation of the guaranteed rate.</li>'+
  '<li><b>Sheet 1 layout:</b> callouts start at “2.” (no 1.), only 4 of ~10 labels are numbered (2 Loading transfer, 3 C-axis cart, 4 D-axis cart, 5 tensioner), and “5.张力器” is left in Chinese.</li>'+
  '<li><b>Unit numbering clashes:</b> sheet 7 numbers machines 1 Feeder, 2 Transfer, 3 12-spindle winder, 4 Soldering & assembly, 5 Housing/collecting; sheet 3 renumbers the back half 1 Soldering, 2 Assembly, 3 Housing – so “1”, “2” and “3” each mean two different machines.</li>'+
  '<li><b>Sheet 1 labels</b> “Single-Spindle Primary Winding Machine” and “Assembly & Soldering Machine” as if separate machines; sheet 5 shows primary winding is one station on the rotary table of the same machine.</li>'+
@@ -829,7 +940,7 @@ function renderMapping(){
  '<li><b>Quantities not stated:</b> no cycle time per station, no tray quantities, no buffer sizes, no NG/yield guarantee, no staffing figure, no power/air figures – all shown here as assumptions.</li>'+
  '<li><b>Process gap:</b> no potting step in the SIPU flow (Toyodenso flag); hi-pot is done before potting.</li></ol>';
  $("mapping").innerHTML=h;
- $("mapping").querySelectorAll("a[data-st]").forEach(function(a){a.onclick=function(e){e.preventDefault();selectStation(+a.dataset.st);$("detail").scrollIntoView({behavior:"smooth"});};});
+ $("mapping").querySelectorAll("a[data-st]").forEach(function(a){a.onclick=function(e){e.preventDefault();selectStation(+a.dataset.st);$("detail").scrollIntoView({behavior:"smooth",block:"center"});};});
 }
 var ASM=[
  ["lo_bob","LO","St.1 Load kitted bobbin trays","min / 1000 pcs","≈1 min per tray of 50"],
@@ -852,14 +963,6 @@ var ASM=[
  ["te_wait","TE","Downtime per uncovered technician minute","factor","1.0 = each uncovered minute stops the line 1 min"],
  ["upPace","—","Upstream pace vs takt (feeder/winder/solder)","fraction","0.95 = 5% faster than takt"]
 ];
-function renderAssump(){
- var h='<p class="small">None of these values are in the SIPU or Atlas documents. They are engineering estimates so the simulator can work, and you can change any of them. Edit a value and every panel and the animation update.</p><div class="scroll"><table><tr><th>Role</th><th>Task</th><th>Unit</th><th class="n">Value</th><th>Note</th></tr>';
- ASM.forEach(function(a){h+='<tr><td>'+a[1]+'</td><td>'+a[2]+' '+TAG.asm+'</td><td>'+a[3]+'</td><td style="width:90px"><input type="number" step="any" id="a_'+a[0]+'" value="'+P[a[0]]+'"></td><td class="small">'+a[4]+'</td></tr>';});
- h+='</table></div><p class="small">Other animation assumptions: bobbin tray 50, housing/product tray 48, product stacker 5 trays, D-axis buffer 24, NG bins 40, wire spool 125 coils, primary feeder hopper 400, core feeder 600, minor stops average 2 min, C-axis cart 8 s per trip, walking speed 1 m/s. With one person on a shift the line keeps running through the break for the “autonomy” minutes only.</p><div class="toolbar"><button id="bDefaults">Restore all defaults</button></div>';
- $("assump").innerHTML=h;
- ASM.forEach(function(a){$("a_"+a[0]).onchange=function(){var v=parseFloat(this.value);if(isFinite(v)&&v>=0){P[a[0]]=a[0]==="upPace"?Math.max(0.5,Math.min(1,v)):v;changed(false);}};});
- $("bDefaults").onclick=function(){P=JSON.parse(JSON.stringify(DEF));window.CG125.P=P;renderControls();renderAssump();changed(true,true);};
-}
 function renderToyo(){
  $("toyo").innerHTML='<ul class="small" style="color:#14171F;margin:0;padding-left:18px">'+
  '<li><b>Capacity margin 20–30%</b> – shown as the margin indicator in the capacity planner.</li>'+
@@ -869,24 +972,217 @@ function renderToyo(){
  '<li><b>Hi-pot before potting</b> may damage the coil; potting is not in the SIPU flow → St.19 and the downstream potting limit.</li>'+
  '<li><b>Single integrated line:</b> one failure stops every process; keep the existing manual equipment as backup; spare parts (servo, PLC, HMI, CCD, tensioner), China-to-Pakistan engineer response time and remote PLC/VPN support → technician model (downtime per uncovered minute).</li></ul>';
 }
-function rateBanner(){
- var o=P.oee/100, at=function(r){return r*o*P.hours*P.shifts*P.days;};
- $("rateBanner").innerHTML='<div class="banner '+(P.rate>170?"b-warn":"b-info")+'"><b>Line-rate check:</b> SIPU sheet 7 states <b>rated ≥170 pcs/h, actual 150 pcs/h</b> '+TAG.doc+'. Atlas’s 110,000/month is based on <b>200 pcs/h</b> '+TAG.atl+'. With the current days, shifts, hours and OEE: 200 → '+fmt(at(200))+', 170 → '+fmt(at(170))+', 150 → '+fmt(at(150))+' pcs/month. Get SIPU to confirm the guaranteed rate in writing before approval. Now simulating <b>'+P.rate+' pcs/h</b>.</div>';
+/* ============================ PAGE 2 side panels ============================ */
+function crewTxt(m){ return m[0]+" LO"+(m[1]?" + "+m[1]+" MH":"")+(m[2]?" + "+m[2]+" TE":""); }
+function renderCrew(){ if(!$("crew")) return; var n=nSh();
+ var h='<table class="mgrid"><tr><th>Role</th>'+[0,1,2].map(function(i){return '<th'+(S&&i===animShift?' style="background:#E6F4F3;color:#0D8782"':'')+'>Shift '+SHIFT_NAMES[i]+(S&&i===animShift?' ◀ now':'')+'</th>';}).join("")+'</tr>';
+ ROLES.forEach(function(ro,ri){ h+='<tr><td><b style="color:'+ro.color+'">●</b> '+ro.name+'</td>'+[0,1,2].map(function(i){return '<td>'+(i<n?P.man[i][ri]:"–")+'</td>';}).join("")+'</tr>'; });
+ h+='<tr><th>Total on shift</th>'+[0,1,2].map(function(i){return '<th>'+(i<n?P.man[i].reduce(function(a,b){return a+b;},0):"off")+'</th>';}).join("")+'</tr></table>';
+ $("crew").innerHTML=h; }
+function renderAsmSummary(){ var r=model(), ng=P.ng1+P.ng2+P.ng3+P.ng4+P.ng5, heads=r.heads, pb=P.capexUsd*P.fx/P.saving;
+ var rows=[["Requirement",fmt(P.demand)+" pcs/month"],["Calendar",P.days+" days × "+nSh()+" shift(s) × "+P.hours+" h"],["Line rate (fixed, SIPU sheet 7)",RATE_FIXED+" pcs/h · takt "+(3600/RATE_FIXED).toFixed(1)+" s"],["OEE / availability",fmt(P.oee,2)+"%"],["NG total (5 points)",fmt(ng,1)+"%"],["Crew",heads+" people – "+[0,1,2].slice(0,nSh()).map(function(i){return SHIFT_NAMES[i].charAt(0)+": "+crewTxt(P.man[i]);}).join(" · ")],["Downstream potting limit",P.potOn?fmt(P.potCap)+" /month":"not applied"],["Capex / payback","USD "+fmt(P.capexUsd)+" · "+pb.toFixed(1)+" yrs"]];
+ $("asmSummary").innerHTML='<table class="sumtab">'+rows.map(function(x){return '<tr><td>'+x[0]+'</td><td>'+x[1]+'</td></tr>';}).join("")+'</table>'; }
+
+/* ============================ PAGE 1 – ASSUMPTION SHEET ============================ */
+var SHEET=[
+ {sec:"1 · Production requirement"},
+ {k:"demand",l:"Monthly requirement (OK pieces)",u:"pcs / month",src:"atl",step:1000,min:0,max:400000},
+ {k:"potOn",l:"Apply downstream potting / final-assembly limit (outside SIPU scope)",u:"on / off",src:"atl",type:"check"},
+ {k:"potCap",l:"Downstream potting / final-assembly capacity",u:"pcs / month",src:"atl",step:1000,min:0,max:400000},
+ {sec:"2 · Calendar"},
+ {k:"days",l:"Working days per month",u:"days",src:"asm",step:1,min:1,max:31,int:true},
+ {k:"shifts",l:"Shifts per day",u:"shifts",src:"atl",step:1,min:1,max:3,int:true},
+ {k:"hours",l:"Hours per shift",u:"h / shift",src:"asm",step:0.5,min:1,max:12},
+ {k:"breaks",l:"Planned breaks per person",u:"min / shift",src:"asm",step:5,min:0,max:120},
+ {k:"autonomy",l:"Unattended autonomy – line keeps running on buffers during a break",u:"min",src:"asm",step:5,min:0,max:120},
+ {sec:"3 · Line rate"},
+ {k:"rate",l:"Line rate – FIXED at SIPU rated value (sheet 7 item 8: rated ≥170 pcs/h; SIPU also states 150 pcs/h actual)",u:"pcs / h",src:"doc",type:"fixed"},
+ {k:"_takt",l:"Takt time at the fixed rate",u:"s / pc",src:"der",type:"calc",f:function(){return (3600/RATE_FIXED).toFixed(1);}},
+ {sec:"4 · OEE / availability & people utilisation"},
+ {k:"oee",l:"OEE / availability (91.67% is the calibration that gave Atlas’s 110k at 200 pcs/h)",u:"%",src:"der",step:0.01,min:30,max:100},
+ {k:"ucap",l:"Max useful utilisation of a person (fatigue & personal allowance)",u:"%",src:"asm",step:1,min:50,max:100},
+ {k:"upPace",l:"Upstream pace vs takt (feeder / winder / solder); 0.95 = 5% faster than takt",u:"fraction",src:"asm",step:0.01,min:0.5,max:1},
+ {sec:"5 · NG % per NG point"},
+ {k:"ng1",l:"NG-1 wire break / scrap at 12-spindle winder (St.4)",u:"% of pcs",src:"asm",step:0.1,min:0,max:20},
+ {k:"ng2",l:"NG-2 secondary resistance test (St.7 → NG box St.9)",u:"% of pcs",src:"asm",step:0.1,min:0,max:20},
+ {k:"ng3",l:"NG-3 CCD inspection (St.12)",u:"% of pcs",src:"asm",step:0.1,min:0,max:20},
+ {k:"ng4",l:"NG-4 resistance & inter-turn test (St.13)",u:"% of pcs",src:"asm",step:0.1,min:0,max:20},
+ {k:"ng5",l:"NG-5 hi-pot / insulation test (St.19)",u:"% of pcs",src:"asm",step:0.1,min:0,max:20},
+ {sec:"6 · Financials"},
+ {k:"capexUsd",l:"Capex – Xiamen Sipu line (FOB)",u:"USD",src:"atl",step:1,min:1,max:10000000},
+ {k:"fx",l:"Exchange rate",u:"PKR / USD",src:"atl",step:0.5,min:1,max:2000},
+ {k:"saving",l:"Annual saving (mainly manpower, 26 → 5 people)",u:"PKR / year",src:"atl",step:100000,min:1,max:1e10},
+ {k:"targetYrs",l:"Target payback period",u:"years",src:"atl",step:0.5,min:0.5,max:20},
+ {k:"ttPct",l:"Payment by TT (advance); balance by LC",u:"% TT",src:"atl",step:5,min:0,max:100},
+ {k:"manualCap",l:"Current manual line capacity (3 shifts)",u:"pcs / month",src:"atl",step:1000,min:1,max:400000},
+ {k:"manualHeads",l:"Current manual line headcount (3 shifts)",u:"people",src:"atl",step:1,min:1,max:200,int:true}
+];
+var LOADF=ASM.filter(function(a){return a[0]!=="upPace";});
+var DR=null, pvTimer=null;
+function clone(o){return JSON.parse(JSON.stringify(o));}
+function withP(tmp,fn){ var o=P; P=tmp; try{return fn();} finally{P=o;} }
+function fieldVal(k){ return DR[k]; }
+function inputCell(f){ var v=DR[f.k];
+ if(f.type==="check") return '<input type="checkbox" id="f_'+f.k+'" data-k="'+f.k+'" '+(v?"checked":"")+'>';
+ if(f.type==="fixed") return '<span class="fixed" id="f_rate">'+RATE_FIXED+'</span> <span class="small">read-only</span>';
+ if(f.type==="calc") return '<span class="fixed" style="border-style:solid;color:#5b3aa6">'+f.f()+'</span>';
+ return '<input type="number" id="f_'+f.k+'" data-k="'+f.k+'" step="'+f.step+'" min="'+f.min+'" max="'+f.max+'" value="'+v+'">'; }
+function defTxt(f){ if(f.type==="check") return DEF[f.k]?"on":"off"; if(f.type==="fixed") return RATE_FIXED; if(f.type==="calc") return "—"; return fmt(DEF[f.k],(DEF[f.k]%1)?2:0); }
+function isChg(f){ return f.k in DEF && f.type!=="fixed" && DR[f.k]!==DEF[f.k]; }
+function renderSheet(){
+ var h='<tr><th>Assumption</th><th>Value</th><th>Unit</th><th class="n">Default</th><th>Source</th></tr>';
+ SHEET.forEach(function(f){ if(f.sec){ h+='<tr class="sec"><td colspan="5">'+f.sec+'</td></tr>'; return; }
+  h+='<tr id="row_'+f.k+'" class="'+(isChg(f)?"chg":"")+'"><td class="lbl"><label for="f_'+f.k+'">'+f.l+'</label></td><td class="inp">'+inputCell(f)+'</td><td class="unit">'+f.u+'</td><td class="def">'+defTxt(f)+'</td><td>'+TAG[f.src]+'</td></tr>'; });
+ $("sheet").innerHTML=h;
+ $("sheet").querySelectorAll("input[data-k]").forEach(function(inp){ inp.addEventListener(inp.type==="checkbox"?"change":"input",function(){ onField(inp,SHEET); }); });
 }
-function changed(resetAnim,rerender){
- renderManning(); renderEffect(); renderPlanner(); renderFin(); rateBanner(); renderDetail();
- if(rerender) renderControls();
- $("animShift").querySelectorAll("option").forEach(function(o){o.disabled= +o.value>=P.shifts;});
- if(animShift>=P.shifts){animShift=0;$("animShift").value="0";resetAnim=true;}
- if(resetAnim) resetSim();
+function renderLoadTab(){
+ var h='<tr><th>Role</th><th>Task</th><th>Value</th><th>Unit</th><th class="n">Default</th><th>Source</th><th>Note</th></tr>';
+ LOADF.forEach(function(a){ h+='<tr id="row_'+a[0]+'" class="'+(DR[a[0]]!==DEF[a[0]]?"chg":"")+'"><td>'+a[1]+'</td><td class="lbl"><label for="f_'+a[0]+'">'+a[2]+'</label></td><td class="inp"><input type="number" step="any" min="0" id="f_'+a[0]+'" data-k="'+a[0]+'" value="'+DR[a[0]]+'"></td><td class="unit">'+a[3]+'</td><td class="def">'+DEF[a[0]]+'</td><td>'+TAG.asm+'</td><td class="small">'+a[4]+'</td></tr>'; });
+ $("loadtab").innerHTML=h;
+ $("loadtab").querySelectorAll("input[data-k]").forEach(function(inp){ inp.addEventListener("input",function(){ onField(inp,null); }); });
+}
+function specOf(k){ var s=SHEET.filter(function(f){return f.k===k;})[0]; if(s) return s; return {k:k,min:0,max:1e6}; }
+function checkField(k,raw){ var f=specOf(k); var v=parseFloat(raw); if(raw===""||!isFinite(v)) return {ok:false,msg:"enter a number"};
+ if(v<f.min||v>f.max) return {ok:false,msg:"must be between "+fmt(f.min,f.min%1?2:0)+" and "+fmt(f.max,f.max%1?2:0)};
+ if(f.int && Math.round(v)!==v) return {ok:false,msg:"must be a whole number"}; return {ok:true,v:v}; }
+function onField(inp,list){ var k=inp.dataset.k;
+ if(inp.type==="checkbox"){ DR[k]=inp.checked; }
+ else { var c=checkField(k,inp.value); inp.classList.toggle("bad",!c.ok); inp.title=c.ok?"":c.msg; if(c.ok) DR[k]=c.v; else return; }
+ var row=$("row_"+k); if(row) row.classList.toggle("chg", DR[k]!==DEF[k]);
+ if(k==="shifts") renderManTab(); schedulePreview(); }
+function renderManTab(){ var n=Math.max(1,Math.min(3,Math.round(DR.shifts))); var ideal=withP(DR,function(){return idealManning(n);});
+ var h='<div class="scroll"><table class="mtab"><tr><th>Role</th>'+[0,1,2].map(function(i){return '<th>Shift '+SHIFT_NAMES[i]+(i>=n?' (off)':'')+'</th>';}).join("")+'<th>Total</th><th>Ideal total</th></tr>';
+ ROLES.forEach(function(ro,ri){ var tot=0, itot=0; for(var i=0;i<n;i++){tot+=DR.man[i][ri]; if(ideal) itot+=ideal.m[i][ri];}
+  h+='<tr><td><b style="color:'+ro.color+'">●</b> '+ro.name+'<div class="small">'+ro.desc+'</div></td>'+[0,1,2].map(function(i){ var dis=i>=n;
+   return '<td><input type="number" min="0" max="4" step="1" id="m_'+i+'_'+ri+'" data-s="'+i+'" data-r="'+ri+'" value="'+(dis?0:DR.man[i][ri])+'" '+(dis?"disabled":"")+'><div class="ideal">'+(dis||!ideal?"&nbsp;":"ideal "+ideal.m[i][ri])+'</div></td>'; }).join("")+'<td><b id="mt_'+ri+'">'+tot+'</b></td><td class="ideal">'+(ideal?itot:"—")+'</td></tr>'; });
+ h+='</table></div><div class="toolbar" style="margin-top:8px"><button id="bIdeal" class="pri">Apply ideal crew</button><span class="small">Source of crew: '+TAG.asm+' engineering estimate from the tending loads below; Atlas basis is 5 people '+TAG.atl+'.</span></div>';
+ if(ideal) h+='<div class="banner b-ok"><b>Ideal crew at '+RATE_FIXED+' pcs/h for '+n+' shift(s): '+ideal.t+' people</b> – '+[0,1,2].slice(0,n).map(function(i){return "Shift "+SHIFT_NAMES[i]+": "+crewTxt(ideal.m[i]);}).join(" · ")+'. Smallest crew with zero manning loss under the tending-load assumptions '+TAG.der+'. One Line Operator per running shift is loaded about '+pct(ideal.r.sh[0].loLoad/ideal.r.sh[0].loCap,0)+' of usable time; kitting & packing need ~'+fmt(ideal.r.mhLoad)+' min/day; the shared technician ~'+fmt(ideal.r.teLoad)+' min/day.</div>';
+ $("mantab").innerHTML=h;
+ $("mantab").querySelectorAll("input[data-s]").forEach(function(inp){ inp.addEventListener("input",function(){ var v=parseFloat(inp.value), ok=isFinite(v)&&v>=0&&v<=4&&Math.round(v)===v; inp.classList.toggle("bad",!ok); inp.title=ok?"":"0–4 whole people";
+  if(ok){ DR.man[+inp.dataset.s][+inp.dataset.r]=v; var ri=+inp.dataset.r, t=0; for(var i=0;i<n;i++) t+=DR.man[i][ri]; $("mt_"+ri).textContent=t; schedulePreview(); } }); });
+ $("bIdeal").onclick=function(){ if(ideal){ for(var i=0;i<n;i++) DR.man[i]=ideal.m[i].slice(); renderManTab(); schedulePreview(); } };
+}
+var manTabTimer=null;
+function schedulePreview(){ clearTimeout(pvTimer); pvTimer=setTimeout(function(){ renderPreview(); clearTimeout(manTabTimer); manTabTimer=setTimeout(function(){ var a=document.activeElement; if(!(a&&a.dataset&&a.dataset.s!=null)) renderManTab(); },400); },150); }
+function renderPreview(){ var r=withP(DR,function(){return model();}); var gap=r.actualOK-DR.demand, mg=DR.demand>0?r.actualOK/DR.demand-1:0, pb=DR.capexUsd*DR.fx/DR.saving;
+ $("preview").innerHTML='<span>Live preview '+TAG.der+'</span><span>Rated gross <b>'+fmt(r.ratedGross)+'</b>/mo</span><span>Achievable OK <b>'+fmt(r.actualOK)+'</b>/mo</span><span>vs requirement <b style="color:'+(gap<0?"#C0362C":"#16814A")+'">'+(gap>=0?"+":"")+fmt(gap)+'</b> ('+(mg>=0?"+":"")+pct(mg)+')</span><span>Crew <b>'+r.heads+'</b></span><span>Payback <b style="color:'+(pb<=DR.targetYrs?"#16814A":"#C0362C")+'">'+pb.toFixed(1)+' yrs</b></span>'; }
+function validateAll(){ var errs=[];
+ document.querySelectorAll("#sheet input[type=number][data-k], #loadtab input[data-k]").forEach(function(inp){ var c=checkField(inp.dataset.k,inp.value); inp.classList.toggle("bad",!c.ok); if(!c.ok){ var lab=document.querySelector('label[for="'+inp.id+'"]'); errs.push((lab?lab.textContent:inp.dataset.k)+": "+c.msg);} });
+ var n=Math.max(1,Math.min(3,Math.round(DR.shifts))), any=false;
+ document.querySelectorAll("#mantab input[data-s]").forEach(function(inp){ if(inp.disabled) return; var v=parseFloat(inp.value); if(!(isFinite(v)&&v>=0&&v<=4&&Math.round(v)===v)){ inp.classList.add("bad"); errs.push("Manpower Shift "+SHIFT_NAMES[+inp.dataset.s]+" "+ROLES[+inp.dataset.r].name+": 0–4 whole people"); } });
+ for(var i=0;i<n;i++) if(DR.man[i][0]+DR.man[i][1]+DR.man[i][2]>0) any=true;
+ if(!any) errs.push("Manpower: at least one person must be on a running shift");
+ return errs; }
+var LSKEY="cg125.assumptions.v3";
+function saveP(){ try{ localStorage.setItem(LSKEY,JSON.stringify(P)); }catch(e){} }
+function loadP(){ try{ var s=JSON.parse(localStorage.getItem(LSKEY)||"null"); if(!s||typeof s!=="object") return;
+ var q=clone(DEF); Object.keys(DEF).forEach(function(k){ if(k==="man"){ if(Array.isArray(s.man)&&s.man.length===3&&s.man.every(function(r){return Array.isArray(r)&&r.length===3&&r.every(function(x){return typeof x==="number"&&x>=0&&x<=4;});})) q.man=s.man; }
+  else if(typeof s[k]===typeof DEF[k] && (typeof s[k]!=="number"||isFinite(s[k]))) q[k]=s[k]; });
+ q.rate=RATE_FIXED; P=q; }catch(e){} }
+function enterAssumptions(){ DR=clone(P); DR.rate=RATE_FIXED; renderSheet(); renderManTab(); renderLoadTab(); renderPreview(); $("errs").innerHTML=""; }
+function simulate(){ var errs=validateAll();
+ if(errs.length){ $("errs").innerHTML="<b>Fix "+errs.length+" input(s) before simulating:</b> "+errs.join(" · "); var b=document.querySelector(".bad"); if(b) b.scrollIntoView({block:"center"}); return false; }
+ P=clone(DR); P.shifts=Math.round(P.shifts); P.rate=RATE_FIXED; saveP(); pending=true; go("simulation"); return true; }
+
+/* ============================ PAGE 3 – RESULTS ============================ */
+function computeResults(){
+ var r=model(), oee=P.oee/100, H=P.hours, n=r.n, days=P.days;
+ var theo=P.rate*H*n*days, oeeLoss=theo*(1-oee), starve=(P.rate-r.R)*oee*H*n*days;
+ var manLoss=Math.max(0,r.R*oee*H*n*days-r.actualGross), ngLoss=r.actualGross*(1-r.y), potLoss=r.actualGross*r.y-r.actualOK;
+ var gap=r.actualOK-P.demand, margin=P.demand>0?r.actualOK/P.demand-1:0;
+ var capPkr=P.capexUsd*P.fx, pb=capPkr/P.saving, roi=P.saving/capPkr;
+ var at=function(rt){return rt*oee*H*n*days;};
+ return {r:r,theo:theo,oeeLoss:oeeLoss,starve:starve,manLoss:manLoss,ngLoss:ngLoss,potLoss:potLoss,actualOK:r.actualOK,ratedGross:r.ratedGross,ratedOK:r.ratedOK,
+  gap:gap,margin:margin,capPkr:capPkr,pb:pb,roi:roi,opp:r.actualOK/(r.heads||1),manOpp:P.manualCap/P.manualHeads,at150:at(150),at200:at(200),heads:r.heads};
+}
+function kv(id,v,l,cls,raw){ return '<div class="kpi '+(cls||"")+'"><div class="v" id="rv_'+id+'" data-v="'+(raw==null?"":raw)+'">'+v+'</div><div class="l">'+l+'</div></div>'; }
+function renderResults(){
+ var c=computeResults(), r=c.r;
+ $("printMeta").textContent="Generated "+new Date().toLocaleString()+" · "+P.days+" days × "+nSh()+" shifts × "+P.hours+" h · "+RATE_FIXED+" pcs/h · OEE "+fmt(P.oee,2)+"% · crew "+c.heads;
+ $("rateBanner").innerHTML='<div class="banner b-info"><b>Line rate:</b> fixed at <b>'+RATE_FIXED+' pcs/h</b> – SIPU sheet 7 item 8 rated value (≥170 pcs/h) '+TAG.doc+'. Note: SIPU also states <b>150 pcs/h actual</b>; at 150 the same calendar and OEE would give '+fmt(c.at150)+' pcs/month gross ('+pct(c.at150/c.ratedGross-1,0)+'). Atlas’s earlier 110,000/month assumed 200 pcs/h – get SIPU’s guaranteed rate in writing before approval.</div>';
+ var mcls=c.margin<0?"ng":c.margin<0.2?"":"ok";
+ $("hero").innerHTML='<div class="hero">'+kv("demand",fmt(P.demand),"Requirement (OK pcs / month)","",P.demand)+kv("actualOK",fmt(c.actualOK),"Achievable OK output / month"+(r.potLimited?" (potting-limited)":""),"ok",Math.round(c.actualOK))+
+  kv("gap",(c.gap>=0?"+":"")+fmt(c.gap),c.gap>=0?"Surplus vs requirement":"Shortfall vs requirement",c.gap<0?"ng":"ok",Math.round(c.gap))+kv("margin",(c.margin>=0?"+":"")+pct(c.margin),"Capacity margin (Toyodenso wants 20–30%)",mcls,c.margin.toFixed(4))+
+  kv("rated",fmt(c.ratedGross),"Rated gross / month at "+RATE_FIXED+" pcs/h × OEE","big",Math.round(c.ratedGross))+kv("actualGross",fmt(r.actualGross),"Actual gross / month (with crew, before NG)","",Math.round(r.actualGross))+
+  kv("opp",fmt(c.opp),"Output per person / month ("+c.heads+" people)","big",Math.round(c.opp))+kv("pb",c.pb.toFixed(1)+" yrs","Simple payback vs "+P.targetYrs+"-yr target",c.pb<=P.targetYrs?"ok":"ng",c.pb.toFixed(2))+kv("roi",pct(c.roi,0),"Simple annual ROI","ok",c.roi.toFixed(4))+'</div>';
+ /* losses */
+ var rows=[["Theoretical at "+RATE_FIXED+" pcs/h × "+fmt(P.hours*nSh()*P.days)+" h",c.theo,""],["− OEE / availability loss ("+fmt(100-P.oee,2)+"%)",-c.oeeLoss,"oee"],["− Upstream NG starvation (NG-1 + NG-2 > pace margin)",-c.starve,"starve"],["− Manpower loss (tending overload, breaks, technician cover)",-c.manLoss,"man"],["− NG loss after rotary (NG-3/4/5)",-c.ngLoss,"ng"],["− Downstream potting limit",-c.potLoss,"pot"],["= Achievable OK output",c.actualOK,"ok"]];
+ var h='<table class="wf"><tr><th>Step</th><th class="n">pcs / month</th><th class="n">% of theoretical</th><th style="width:30%"></th></tr>';
+ rows.forEach(function(x){ var w=Math.abs(x[1])/c.theo*100, col=x[2]==="ok"?"#16814A":x[1]<0?"#C0362C":"#04337B";
+  h+='<tr><td>'+x[0]+'</td><td class="n" id="loss_'+(x[2]||"theo")+'" data-v="'+Math.round(x[1])+'">'+(x[1]<0?"−":"")+fmt(Math.abs(x[1]))+'</td><td class="n">'+pct(Math.abs(x[1])/c.theo)+'</td><td><div class="wfbar" style="width:'+Math.max(x[1]?0.5:0,w)+'%;background:'+col+'"></div></td></tr>'; });
+ h+='</table><p class="small">Monthly losses from the deterministic model. NG-1/NG-2 parts are scrapped before the rotary table and only cost output if they exceed the upstream pace margin ('+pct(1-P.upPace,0)+').</p>';
+ $("losses").innerHTML=h;
+ /* constraint */
+ var cons=r.cons.slice(); if(r.potLimited) cons.push("Downstream potting / final assembly capped at "+fmt(P.potCap)+"/month");
+ var ch='<h3 style="margin-top:0">Constraint role / station</h3>'+(cons.length?'<div class="banner '+(c.manLoss+c.starve+c.potLoss>0.5?"b-bad":"b-warn")+'" style="margin-top:0" id="consBox">'+(c.manLoss+c.starve+c.potLoss>0.5?"":"<b>Tight but no output loss:</b><br>")+cons.map(function(x){return "• "+x;}).join("<br>")+'</div>':'<div class="banner b-ok" style="margin-top:0" id="consBox">No manning constraint – every role has spare capacity. The pacing station is the <b>rotary assembly table (St.9–14)</b>, 1-up at takt '+(3600/RATE_FIXED).toFixed(1)+' s; output is set by line rate × OEE × hours.</div>');
+ var mc=c.margin<0?"b-bad":c.margin<0.2?"b-warn":"b-ok";
+ ch+='<h3>Capacity margin vs Toyodenso guideline '+TAG.toy+'</h3><div class="banner '+mc+'" style="margin-top:0"><b>Margin: '+pct(c.margin)+'</b> over the '+fmt(P.demand)+' requirement. Toyodenso: equipment capacity normally needs a <b>20–30% margin</b> after defects and downtime. '+(c.margin<0?"<b>Requirement is NOT met</b> – to reach "+fmt(P.demand)+" the line would need "+fmt(P.demand/(r.y*P.oee/100*P.hours*nSh()*P.days))+" pcs/h, or "+(P.demand/(r.y*P.oee/100*P.hours*nSh()*RATE_FIXED)).toFixed(1)+" working days at "+nSh()+" shift(s).":c.margin<0.2?"Below the 20% guideline – little room for breakdowns, SIPU service delays or ramp-up.":"Meets the 20% guideline.")+'</div>';
+ ch+='<table style="margin-top:8px"><tr><th>Rated vs actual</th><th class="n">pcs / month</th></tr><tr><td>Rated gross ('+RATE_FIXED+' pcs/h × OEE × hours)</td><td class="n">'+fmt(c.ratedGross)+'</td></tr><tr><td>Rated OK (after NG)</td><td class="n">'+fmt(c.ratedOK)+'</td></tr><tr><td>Actual gross with this crew</td><td class="n">'+fmt(r.actualGross)+'</td></tr><tr><td>Actual OK with this crew</td><td class="n"><b>'+fmt(c.actualOK)+'</b></td></tr><tr><td>For reference: at 150 pcs/h (SIPU “actual”)</td><td class="n">'+fmt(c.at150*r.y)+' OK</td></tr></table>';
+ $("constraint").innerHTML=ch;
+ renderTrial(c); renderWipRes(); renderEffect(); renderSens(); renderPlanner(); renderFin(); renderToyo();
+}
+function renderTrial(c){ var s = RUN.done?RUN.res:snapshot();
+ if(!RUN.started||!s){ $("trial").innerHTML='<p class="small">No trial run yet. <a class="lnk" href="#/simulation">Run the simulation ▶</a></p>'; return; }
+ var ngT=s.ng.reduce(function(a,b){return a+b;},0), diff=c.actualOK>0?s.monthly/c.actualOK-1:0;
+ var lbl={shift:"1 shift (Shift "+SHIFT_NAMES[s.startShift]+")",day:"1 day",month:"1 month"}[s.dur];
+ var h='<div class="kpis">'+kv("runOk",fmt(s.ok),"OK pcs in trial run","ok",s.ok)+kv("runT",fmt(s.t/3600,1)+" h","Simulated line time – "+lbl+(s.done?"":" (partial, "+pct(s.t/s.end,0)+")"),"",s.t)+kv("runRate",fmt(s.avgRate),"Average rate (pcs/h OK)","big",Math.round(s.avgRate))+
+  kv("runMonth",fmt(s.monthly),"Extrapolated OK / month"+(s.potCut?" (potting-capped)":""),"big",Math.round(s.monthly))+kv("runDiff",(diff>=0?"+":"")+pct(diff),"Trial run vs model ("+fmt(c.actualOK)+")",Math.abs(diff)>0.05?"ng":"",diff.toFixed(4))+kv("runNg",fmt(ngT),"NG pieces ("+(s.ok+ngT>0?pct(ngT/(s.ok+ngT)):"—")+")","ng",ngT)+'</div>';
+ h+='<div class="grid g2" style="margin-top:10px"><div><table><tr><th>Time lost in trial run</th><th class="n">min</th><th class="n">% of run</th></tr>'+
+  '<tr><td>Minor stops (OEE)</td><td class="n">'+fmt(s.oee/60)+'</td><td class="n">'+pct(s.oee/s.t)+'</td></tr>'+
+  '<tr><td>Fault waiting – no technician</td><td class="n">'+fmt(s.te/60)+'</td><td class="n">'+pct(s.te/s.t)+'</td></tr>'+
+  '<tr><td>Station starved/blocked waiting for an operator</td><td class="n">'+fmt(s.wait/60)+'</td><td class="n">'+pct(s.wait/s.t)+'</td></tr></table></div>'+
+  '<div><table><tr><th>NG point</th><th class="n">pcs</th></tr>'+["NG-1 wire break (St.4)","NG-2 sec. resistance (St.7→9)","NG-3 CCD (St.12)","NG-4 R & inter-turn (St.13)","NG-5 hi-pot (St.19)"].map(function(x,i){return '<tr><td>'+x+'</td><td class="n">'+s.ng[i]+'</td></tr>';}).join("")+'</table></div></div>';
+ var shRows=[0,1,2].filter(function(i){return s.cnt[i]>0;});
+ if(shRows.length) h+='<table style="margin-top:10px"><tr><th>Shift</th><th>Crew</th><th class="n">Shifts simulated</th><th class="n">OK pcs</th><th class="n">Avg OK per shift</th></tr>'+shRows.map(function(i){return '<tr><td>'+SHIFT_NAMES[i]+'</td><td>'+crewTxt(P.man[i])+'</td><td class="n">'+s.cnt[i]+'</td><td class="n">'+fmt(s.byShift[i])+'</td><td class="n">'+fmt(s.byShift[i]/s.cnt[i])+'</td></tr>';}).join("")+'</table>';
+ h+='<p class="small">The trial run starts with an empty line, so short runs include a warm-up of a few minutes; random minor stops, wire breaks and faults make each run slightly different. The deterministic model above is the reference for monthly figures.</p>';
+ $("trial").innerHTML=h; }
+function renderWipRes(){ var s=RUN.done?RUN.res:snapshot(); if(!RUN.started||!s){ $("wipRes").innerHTML='<p class="small">No trial run yet.</p>'; return; }
+ var h='<div class="scroll"><table><tr><th>Buffer / station</th><th>Type</th><th class="n">Average</th><th class="n">Max</th><th class="n">Capacity</th></tr>';
+ WIPDEF.forEach(function(w){ var q=s.wip[w.k]; h+='<tr><td>'+w.label+'</td><td>'+({wip:"WIP",stock:"Material stock",fg:"Finished goods"})[w.kind]+'</td><td class="n" id="wip_'+w.k+'">'+fmt(q.avg,1)+'</td><td class="n">'+fmt(q.max)+'</td><td class="n">'+(w.cap?fmt(w.cap):"—")+'</td></tr>'; });
+ var lt = s.avgRate>0 ? s.wipAvg/s.avgRate*60 : NaN;
+ h+='<tr><th>Total line WIP (in-process pieces)</th><th></th><th class="n" id="wip_total">'+fmt(s.wipAvg,1)+'</th><th class="n">'+fmt(s.wipMax)+'</th><th></th></tr></table></div><p class="small">Average WIP is time-weighted over the trial run. Throughput time through the line ≈ average WIP ÷ output rate (Little’s law) ≈ <b>'+(isFinite(lt)?fmt(lt,1)+" min":"—")+'</b> per piece. Material stock and finished goods awaiting removal are shown separately and are not counted in line WIP.</p>';
+ $("wipRes").innerHTML=h; }
+function renderSens(){ var n=nSh(), ideal=idealManning(n), base=clone(P.man), b=model(base).actualOK;
+ function mod(f){ var m=clone(base); f(m); return m; }
+ var sc=[["Current crew (Page 1)",base],["Ideal crew (minimum, no loss)",ideal?ideal.m:base],["−1 Material Handler",mod(function(m){for(var i=0;i<3;i++){if(m[i][1]>0){m[i][1]--;break;}}})],
+  ["−1 Technician",mod(function(m){for(var i=0;i<3;i++){if(m[i][2]>0){m[i][2]--;break;}}})],["−1 Line Operator on Shift "+SHIFT_NAMES[n-1],mod(function(m){m[n-1][0]=Math.max(0,m[n-1][0]-1);})]];
+ if(n>1) sc.push(["−1 Line Operator on Shift A (day)",mod(function(m){m[0][0]=Math.max(0,m[0][0]-1);})]);
+ var h='<table><tr><th>Scenario</th><th class="n">People</th><th class="n">OK / month</th><th class="n">vs current</th><th>Main constraint</th></tr>';
+ sc.forEach(function(x){ var r=model(x[1]); var d=b>0?r.actualOK/b-1:0;
+  h+='<tr><td>'+x[0]+'</td><td class="n">'+r.heads+'</td><td class="n">'+fmt(r.actualOK)+'</td><td class="n" style="color:'+(d<-0.001?"#C0362C":"#16814A")+'">'+(d>=0?"+":"")+pct(d)+'</td><td class="small">'+(!r.cons.length?"none":(d>-0.0005?"no output loss – "+r.cons[0]:r.cons.filter(function(x){return !/spills onto/.test(x);})[0]||r.cons[0]))+'</td></tr>'; });
+ h+='</table><p class="small">Each “−1” scenario removes one person from the current crew; output falls because that role’s tending work spills to others or goes uncovered (feeders starve, stacker blocks, faults wait). Tending loads are '+TAG.asm+' – edit them on Page 1.</p>';
+ $("sens").innerHTML=h; }
+
+/* ============================ ROUTER ============================ */
+function updateNav(){ ["assumptions","simulation","results"].forEach(function(k){ var a=$("nav-"+k); a.classList.toggle("active",curRoute===k); });
+ $("nav-assumptions").classList.toggle("done",RUN.started&&curRoute!=="assumptions"); $("nav-simulation").classList.toggle("done",RUN.done&&curRoute!=="simulation"); }
+function go(r){ if(location.hash==="#/"+r) route(); else location.hash="#/"+r; }
+function route(){ var h=(location.hash||"").replace(/^#\/?/,""); if(["assumptions","simulation","results"].indexOf(h)<0) h="assumptions";
+ curRoute=h; ["assumptions","simulation","results"].forEach(function(k){ $("page-"+k).classList.toggle("show",k===h); });
+ if(h==="assumptions") enterAssumptions();
+ if(h==="simulation"){ if(pending||!RUN.started){ pending=false; startRun(); } renderAsmSummary(); renderCrew(); renderDetail(); lastFrame=performance.now(); }
+ if(h==="results") renderResults();
+ updateNav(); window.scrollTo(0,0); document.title=({assumptions:"1 · Assumptions",simulation:"2 · Simulation",results:"3 · Results"})[h]+" – CG125 Automated Line Simulator";
 }
 /* ============================ INIT ============================ */
-drawLayout(); resetSim(); renderControls(); renderMapping(); renderAssump(); renderToyo(); changed(false,false);
-$("bPlay").onclick=function(){running=!running;this.textContent=running?"❚❚ Pause":"▶ Play";};
-$("bReset").onclick=function(){resetSim();};
-$("speed").onchange=function(){speed=+this.value; if($("c_spd")) $("c_spd").value=speed;};
-$("animShift").onchange=function(){animShift=+this.value;resetSim();};
-window.CG125={P:P,model:model,idealManning:idealManning,getS:function(){return S;},step:function(s){stepSim(s);render();},setMan:function(m){P.man=m;changed(true);},reset:function(){P=JSON.parse(JSON.stringify(DEF));window.CG125.P=P;changed(true,true);}};
+loadP();
+drawLayout(); renderMapping();
+$("bSimulate").onclick=simulate;
+$("bResetDef").onclick=function(){ DR=clone(DEF); renderSheet(); renderManTab(); renderLoadTab(); renderPreview(); $("errs").innerHTML='<span style="color:#16814A">All inputs reset to defaults – press Simulate ▶ to apply.</span>'; };
+$("bPlay").onclick=function(){ if(RUN.done){ startRun(); return; } running=!running; if(!running) RUN.ffwd=false; setPlayBtn(); };
+$("bRestart").onclick=function(){ startRun(); };
+$("speed").onchange=function(){ speed=this.value==="max"?"max":+this.value; };
+$("runDur").onchange=function(){ startRun(); };
+$("startShift").onchange=function(){ if(RUN.dur==="shift") startRun(); };
+$("bFF").onclick=function(){ if(RUN.done) return; RUN.ffwd=true; running=true; setPlayBtn(); };
+$("bResults").onclick=function(){ RUN.navigated=true; go("results"); };
+$("bBackSim").onclick=function(){ go("simulation"); };
+$("bEditAsm").onclick=function(){ go("assumptions"); };
+$("bPrint").onclick=function(){ window.print(); };
+window.addEventListener("hashchange",route);
+window.CG125={get P(){return P;},model:model,idealManning:idealManning,computeResults:computeResults,getS:function(){return S;},getRun:function(){return RUN;},snapshot:snapshot,step:function(s){stepSim(s);render();},WIPDEF:WIPDEF};
+route();
 requestAnimationFrame(loop);
 })();
 </script>
