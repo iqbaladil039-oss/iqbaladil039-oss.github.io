@@ -58,10 +58,27 @@ details summary{cursor:pointer;color:var(--navy);font-weight:600}
 .steps a small{display:block;font-weight:400;font-size:11.5px;color:var(--t3)}
 .page{display:none}.page.show{display:block}
 .sheet{width:100%;border-collapse:collapse}.sheet th{position:sticky;top:0}
-.sheet td{padding:4px 6px;vertical-align:middle}.sheet td.lbl{width:42%}.sheet td.inp{width:130px}.sheet td.unit{width:120px;color:var(--t2);font-size:12px}.sheet td.def{width:90px;color:var(--t2);font-size:12px;text-align:right;font-variant-numeric:tabular-nums}
-.sheet tr.chg td.inp input{background:#FFF8E1;border-color:#E9C46A}
-.sheet input.bad,.mtab input.bad{border-color:var(--red);background:var(--dangs)}
-.sheet tr.sec td{background:var(--navys);color:var(--navy);font-weight:700;font-size:13px;padding:7px 8px}
+.sheet td{padding:4px 6px;vertical-align:middle}.sheet td.lbl{width:42%}.sheet td.inp{width:130px}.sheet td.unit{width:120px;color:var(--t2);font-size:12px}
+.sheet tr.chg td.inp input,.asm-row.chg .asm-val input{background:#FFF8E1;border-color:#E9C46A}
+input.bad,.mtab input.bad{border-color:var(--red);background:var(--dangs)}
+.asm-grid{display:grid;grid-template-columns:1fr;gap:10px;margin-top:14px;align-items:start}
+@media(min-width:760px){.asm-grid{grid-template-columns:repeat(2,1fr)}}
+@media(min-width:1200px){.asm-grid{grid-template-columns:repeat(3,1fr)}}
+.asm-card{background:var(--card);border:1px solid var(--bd);border-radius:var(--r);padding:0 0 4px;box-shadow:0 1px 2px rgba(20,23,31,.05);min-width:0}
+.asm-card>h3{margin:0 0 2px;padding:7px 10px;background:var(--navys);color:var(--navy);font-size:12.5px;font-weight:700;border-radius:var(--r) var(--r) 0 0;letter-spacing:.15px;line-height:1.3}
+.asm-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 8px;align-items:center;min-height:28px;padding:3px 10px;border-bottom:1px solid var(--soft)}
+.asm-row:last-child{border-bottom:none}
+.asm-row label{font-size:11.5px;line-height:1.25;color:var(--text);margin:0;overflow-wrap:anywhere}
+.asm-note{font-size:10px;color:var(--t3);font-weight:400;line-height:1.2;margin-top:1px}
+.asm-val{display:flex;align-items:center;gap:5px;flex:none;justify-content:flex-end}
+.asm-val input[type=number]{width:96px;padding:2px 4px;font-size:12px;height:24px;font-variant-numeric:tabular-nums}
+.asm-val input[type=checkbox]{width:16px;height:16px;margin:0}
+.asm-unit{font-size:10.5px;color:var(--t2);width:70px;line-height:1.15}
+.asm-val .fixed{padding:2px 7px;font-size:12px}
+.asm-val .small{font-size:10px}
+.sec-h{margin:16px 0 0;font-size:16px;color:var(--navy)}
+.mtab td,.mtab th{padding:4px 6px;font-size:12px}
+.mtab .small{font-size:11px;line-height:1.3;margin-top:2px}
 .fixed{display:inline-block;padding:4px 10px;border-radius:7px;background:var(--soft);border:1px dashed #b9c0cc;font-weight:700;color:var(--navy)}
 .mtab input{width:60px;text-align:center}.mtab td,.mtab th{text-align:center}.mtab td:first-child,.mtab th:first-child{text-align:left}
 .ideal{color:var(--green);font-weight:700;font-size:12px}
@@ -102,10 +119,11 @@ a.lnk{color:var(--navy);font-weight:600}
 
 <!-- ============ PAGE 1 ============ -->
 <section class="page" id="page-assumptions">
- <div class="card"><h2>Assumption sheet</h2><div class="scroll"><table class="sheet" id="sheet"></table></div></div>
+ <div class="asm-grid" id="sheet"></div>
  <div class="card"><h2>Manpower per shift <span class="small" style="font-weight:400">— ideal crew shown alongside</span></h2><div id="mantab"></div></div>
- <div class="card"><h2>Role tending-load assumptions <span class="tag t-asm">ASSUMPTION</span></h2><div class="scroll"><table class="sheet" id="loadtab"></table></div>
-  <p class="small">Other fixed animation assumptions: bobbin tray 50, housing/product tray 48, product stacker 5 trays (240), D-axis buffer 24, solder unload buffer 16, NG bins 40, wire spool 125 coils, primary feeder hopper 400, core feeder 600, minor stops average 2 min, C-axis cart 8 s per trip, walking speed 1 m/s.</p></div>
+ <h2 class="sec-h">Role tending-load assumptions</h2>
+ <div id="loadtab"></div>
+ <p class="small" style="margin-top:8px">Other fixed animation assumptions: bobbin tray 50, housing/product tray 48, product stacker 5 trays (240), D-axis buffer 24, solder unload buffer 16, NG bins 40, wire spool 125 coils, primary feeder hopper 400, core feeder 600, minor stops average 2 min, C-axis cart 8 s per trip, walking speed 1 m/s.</p>
  <div class="actionbar">
   <div class="pv" id="preview"></div>
   <div class="toolbar" style="margin:0"><button id="bResetDef">↺ Reset to defaults</button><button id="bSimulate" class="pri big go">Simulate ▶</button></div>
@@ -1020,15 +1038,28 @@ function inputCell(f){ var v=DR[f.k];
 function defTxt(f){ if(f.type==="check") return DEF[f.k]?"on":"off"; if(f.type==="fixed") return RATE_FIXED; if(f.type==="calc") return "—"; return fmt(DEF[f.k],(DEF[f.k]%1)?2:0); }
 function isChg(f){ return f.k in DEF && f.type!=="fixed" && DR[f.k]!==DEF[f.k]; }
 function renderSheet(){
- var h='<tr><th>Assumption</th><th>Value</th><th>Unit</th><th class="n">Default</th><th>Source</th></tr>';
- SHEET.forEach(function(f){ if(f.sec){ h+='<tr class="sec"><td colspan="5">'+f.sec+'</td></tr>'; return; }
-  h+='<tr id="row_'+f.k+'" class="'+(isChg(f)?"chg":"")+'"><td class="lbl"><label for="f_'+f.k+'">'+f.l+'</label></td><td class="inp">'+inputCell(f)+'</td><td class="unit">'+f.u+'</td><td class="def">'+defTxt(f)+'</td><td>'+TAG[f.src]+'</td></tr>'; });
+ var h="", cur=null, buf="";
+ function flush(){ if(cur){ h+='<div class="asm-card"><h3>'+cur+'</h3>'+buf+'</div>'; buf=""; cur=null; } }
+ SHEET.forEach(function(f){ if(f.sec){ flush(); cur=f.sec; return; }
+  buf+='<div class="asm-row'+(isChg(f)?" chg":"")+'" id="row_'+f.k+'"><label for="f_'+f.k+'">'+f.l+'</label><div class="asm-val">'+inputCell(f)+'<span class="asm-unit">'+f.u+'</span></div></div>'; });
+ flush();
  $("sheet").innerHTML=h;
  $("sheet").querySelectorAll("input[data-k]").forEach(function(inp){ inp.addEventListener(inp.type==="checkbox"?"change":"input",function(){ onField(inp,SHEET); }); });
 }
 function renderLoadTab(){
- var h='<tr><th>Role</th><th>Task</th><th>Value</th><th>Unit</th><th class="n">Default</th><th>Source</th><th>Note</th></tr>';
- LOADF.forEach(function(a){ h+='<tr id="row_'+a[0]+'" class="'+(DR[a[0]]!==DEF[a[0]]?"chg":"")+'"><td>'+a[1]+'</td><td class="lbl"><label for="f_'+a[0]+'">'+a[2]+'</label></td><td class="inp"><input type="number" step="any" min="0" id="f_'+a[0]+'" data-k="'+a[0]+'" value="'+DR[a[0]]+'"></td><td class="unit">'+a[3]+'</td><td class="def">'+DEF[a[0]]+'</td><td>'+TAG.asm+'</td><td class="small">'+a[4]+'</td></tr>'; });
+ var groups={}, order=[];
+ LOADF.forEach(function(a){ if(!groups[a[1]]){ groups[a[1]]=[]; order.push(a[1]); } groups[a[1]].push(a); });
+ var roleName={LO:"Line Operator",MH:"Material Handler / Packer",TE:"Maintenance Technician"};
+ var h='<div class="asm-grid" style="margin-top:8px">';
+ order.forEach(function(role){
+  h+='<div class="asm-card"><h3>'+(roleName[role]||role)+'</h3>';
+  groups[role].forEach(function(a){
+   var note=a[4]?'<div class="asm-note">'+a[4]+'</div>':"";
+   h+='<div class="asm-row'+(DR[a[0]]!==DEF[a[0]]?" chg":"")+'" id="row_'+a[0]+'"><label for="f_'+a[0]+'">'+a[2]+note+'</label><div class="asm-val"><input type="number" step="any" min="0" id="f_'+a[0]+'" data-k="'+a[0]+'" value="'+DR[a[0]]+'"><span class="asm-unit">'+a[3]+'</span></div></div>';
+  });
+  h+='</div>';
+ });
+ h+='</div>';
  $("loadtab").innerHTML=h;
  $("loadtab").querySelectorAll("input[data-k]").forEach(function(inp){ inp.addEventListener("input",function(){ onField(inp,null); }); });
 }
@@ -1046,8 +1077,8 @@ function renderManTab(){ var n=Math.max(1,Math.min(3,Math.round(DR.shifts))); va
  ROLES.forEach(function(ro,ri){ var tot=0, itot=0; for(var i=0;i<n;i++){tot+=DR.man[i][ri]; if(ideal) itot+=ideal.m[i][ri];}
   h+='<tr><td><b style="color:'+ro.color+'">●</b> '+ro.name+'<div class="small">'+ro.desc+'</div></td>'+[0,1,2].map(function(i){ var dis=i>=n;
    return '<td><input type="number" min="0" max="4" step="1" id="m_'+i+'_'+ri+'" data-s="'+i+'" data-r="'+ri+'" value="'+(dis?0:DR.man[i][ri])+'" '+(dis?"disabled":"")+'><div class="ideal">'+(dis||!ideal?"&nbsp;":"ideal "+ideal.m[i][ri])+'</div></td>'; }).join("")+'<td><b id="mt_'+ri+'">'+tot+'</b></td><td class="ideal">'+(ideal?itot:"—")+'</td></tr>'; });
- h+='</table></div><div class="toolbar" style="margin-top:8px"><button id="bIdeal" class="pri">Apply ideal crew</button><span class="small">Source of crew: '+TAG.asm+' engineering estimate from the tending loads below; Atlas basis is 5 people '+TAG.atl+'.</span></div>';
- if(ideal) h+='<div class="banner b-ok"><b>Ideal crew at '+RATE_FIXED+' pcs/h for '+n+' shift(s): '+ideal.t+' people</b> – '+[0,1,2].slice(0,n).map(function(i){return "Shift "+SHIFT_NAMES[i]+": "+crewTxt(ideal.m[i]);}).join(" · ")+'. Smallest crew with zero manning loss under the tending-load assumptions '+TAG.der+'. One Line Operator per running shift is loaded about '+pct(ideal.r.sh[0].loLoad/ideal.r.sh[0].loCap,0)+' of usable time; kitting & packing need ~'+fmt(ideal.r.mhLoad)+' min/day; the shared technician ~'+fmt(ideal.r.teLoad)+' min/day.</div>';
+ h+='</table></div><div class="toolbar" style="margin-top:8px"><button id="bIdeal" class="pri">Apply ideal crew</button><span class="small">Crew is an engineering estimate from the tending loads below; Atlas basis is 5 people.</span></div>';
+ if(ideal) h+='<div class="banner b-ok"><b>Ideal crew at '+RATE_FIXED+' pcs/h for '+n+' shift(s): '+ideal.t+' people</b> – '+[0,1,2].slice(0,n).map(function(i){return "Shift "+SHIFT_NAMES[i]+": "+crewTxt(ideal.m[i]);}).join(" · ")+'. Smallest crew with zero manning loss under the tending-load assumptions. One Line Operator per running shift is loaded about '+pct(ideal.r.sh[0].loLoad/ideal.r.sh[0].loCap,0)+' of usable time; kitting & packing need ~'+fmt(ideal.r.mhLoad)+' min/day; the shared technician ~'+fmt(ideal.r.teLoad)+' min/day.</div>';
  $("mantab").innerHTML=h;
  $("mantab").querySelectorAll("input[data-s]").forEach(function(inp){ inp.addEventListener("input",function(){ var v=parseFloat(inp.value), ok=isFinite(v)&&v>=0&&v<=4&&Math.round(v)===v; inp.classList.toggle("bad",!ok); inp.title=ok?"":"0–4 whole people";
   if(ok){ DR.man[+inp.dataset.s][+inp.dataset.r]=v; var ri=+inp.dataset.r, t=0; for(var i=0;i<n;i++) t+=DR.man[i][ri]; $("mt_"+ri).textContent=t; schedulePreview(); } }); });
